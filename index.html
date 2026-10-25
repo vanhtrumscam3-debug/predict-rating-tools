@@ -153,32 +153,45 @@
       width: 100%;
     }
 
+    /* ===== Image Upload + Drag & Drop ===== */
     .image-upload {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-top: 12px;
+      gap: 14px;
+      margin-top: 14px;
     }
 
     .image-preview {
-      width: 64px;
-      height: 64px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      object-fit: cover;
-      background: #f0ebe3;
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      border: 2px dashed var(--border);
+      background: #faf9f6;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: var(--muted);
       overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .image-preview:hover,
+    .image-preview.drag-over {
+      border-color: var(--gold);
+      background: #f8f1d8;
     }
 
     .image-preview img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    .image-preview.has-image {
+      border-style: solid;
     }
 
     .custom-file-btn {
@@ -500,14 +513,17 @@
           </div>
         </div>
 
-        <!-- Image Upload - English -->
+        <!-- Image Upload with Drag & Drop -->
         <div class="image-upload">
-          <div class="image-preview" id="imagePreview">No image</div>
+          <div class="image-preview" id="imagePreview" title="Click or drag & drop image here">
+            No image
+          </div>
           <div>
             <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:6px;">Drama Poster</label>
             <label for="dramaImage" class="custom-file-btn">Choose File</label>
             <span id="fileName" style="font-size:0.82rem;color:var(--muted);margin-left:10px;">No file chosen</span>
-            <input type="file" id="dramaImage" accept="image/*" onchange="previewImage(event)" style="display:none;">
+            <input type="file" id="dramaImage" accept="image/*" onchange="handleFileSelect(event)" style="display:none;">
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">or drag & drop image here</div>
           </div>
         </div>
 
@@ -589,6 +605,7 @@
     const HIGH_PRECISION_NETWORKS = ['ENA', 'tvN', 'jTBC', 'TV Chosun', 'Channel A'];
     let currentImageBase64 = null;
 
+    // ===== INIT =====
     const episodeSelect = document.getElementById('episode');
     for (let i = 1; i <= 16; i++) {
       const opt = document.createElement('option');
@@ -627,21 +644,64 @@
     updateDramaFilter();
     renderLedger();
 
-    function previewImage(event) {
-      const file = event.target.files[0];
-      const fileNameEl = document.getElementById('fileName');
+    // ===== DRAG & DROP =====
+    const dropZone = document.getElementById('imagePreview');
 
-      if (!file) {
-        fileNameEl.textContent = 'No file chosen';
-        return;
+    // Click on preview also opens file dialog
+    dropZone.addEventListener('click', () => {
+      document.getElementById('dramaImage').click();
+    });
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+      document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    // Highlight drop zone
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => {
+        dropZone.classList.add('drag-over');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => {
+        dropZone.classList.remove('drag-over');
+      }, false);
+    });
+
+    // Handle dropped files
+    dropZone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].type.startsWith('image/')) {
+        handleFiles(files[0]);
+      } else {
+        showToast('Please drop an image file');
       }
+    }, false);
 
+    // ===== FILE HANDLING =====
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) handleFiles(file);
+    }
+
+    function handleFiles(file) {
+      const fileNameEl = document.getElementById('fileName');
       fileNameEl.textContent = file.name;
 
       const reader = new FileReader();
       reader.onload = function(e) {
         currentImageBase64 = e.target.result;
-        document.getElementById('imagePreview').innerHTML = `<img src="${currentImageBase64}" alt="poster">`;
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = `<img src="${currentImageBase64}" alt="poster">`;
+        preview.classList.add('has-image');
       };
       reader.readAsDataURL(file);
     }
@@ -650,9 +710,12 @@
       currentImageBase64 = null;
       document.getElementById('dramaImage').value = '';
       document.getElementById('fileName').textContent = 'No file chosen';
-      document.getElementById('imagePreview').innerHTML = 'No image';
+      const preview = document.getElementById('imagePreview');
+      preview.innerHTML = 'No image';
+      preview.classList.remove('has-image');
     }
 
+    // ===== OTHER FUNCTIONS =====
     function updateFixedLabels() {
       const currentEp = parseInt(document.getElementById('episode').value) || 1;
       const prevEp = Math.max(1, currentEp - 2);
@@ -715,7 +778,9 @@
 
       if (row.image) {
         currentImageBase64 = row.image;
-        document.getElementById('imagePreview').innerHTML = `<img src="${row.image}" alt="poster">`;
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = `<img src="${row.image}" alt="poster">`;
+        preview.classList.add('has-image');
         document.getElementById('fileName').textContent = 'Image loaded';
       } else {
         clearImage();
