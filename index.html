@@ -7,24 +7,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f4f2ee;
+      --bg: #f7f5f0;
       --card: #ffffff;
-      --border: #e4dfd6;
+      --border: #e8e2d6;
       --gold: #c9a227;
       --gold-dark: #a8841a;
       --text: #1c1917;
       --muted: #78716c;
       --success: #15803d;
       --danger: #b91c1c;
-      --shadow: 0 4px 24px rgba(0,0,0,0.06);
+      --shadow: 0 4px 24px rgba(0,0,0,0.05);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      background: linear-gradient(135deg, #f8f4ec 0%, #f0e9db 50%, #e8e0d0 100%);
-      background-attachment: fixed;
+      background-color: #f7f5f0;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(201, 162, 39, 0.06) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(201, 162, 39, 0.05) 0px, transparent 50%);
       color: var(--text);
       line-height: 1.5;
       padding: 32px 16px 60px;
@@ -562,12 +564,9 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // Networks that use 3 decimal places for Nationwide & Seoul
     const HIGH_PRECISION_NETWORKS = ['ENA', 'tvN', 'jTBC', 'TV Chosun', 'Channel A'];
-
     let currentImageBase64 = null;
 
-    // ========== INIT ==========
     const episodeSelect = document.getElementById('episode');
     for (let i = 1; i <= 16; i++) {
       const opt = document.createElement('option');
@@ -612,7 +611,6 @@
     updateDramaFilter();
     renderLedger();
 
-    // ========== IMAGE ==========
     function previewImage(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -620,8 +618,7 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         currentImageBase64 = e.target.result;
-        const preview = document.getElementById('imagePreview');
-        preview.innerHTML = `<img src="${currentImageBase64}" alt="poster">`;
+        document.getElementById('imagePreview').innerHTML = `<img src="${currentImageBase64}" alt="poster">`;
       };
       reader.readAsDataURL(file);
     }
@@ -632,7 +629,6 @@
       document.getElementById('imagePreview').innerHTML = 'No image';
     }
 
-    // ========== FIXED LABELS ==========
     function updateFixedLabels() {
       const currentEp = parseInt(document.getElementById('episode').value) || 1;
       const prevEp = Math.max(1, currentEp - 2);
@@ -643,25 +639,17 @@
       document.getElementById('label10').value = 'Peak rating';
     }
 
-    // ========== FORMAT NUMBER BY NETWORK ==========
     function formatByNetwork(value, type) {
       if (value === null || value === undefined || isNaN(value)) return '–';
 
       const network = document.getElementById('network').value;
       const isHighPrecision = HIGH_PRECISION_NETWORKS.includes(network);
 
-      if (type === 'peak') {
-        return value.toFixed(1);
-      }
-
-      if (isHighPrecision) {
-        return parseFloat(value.toFixed(3)).toString();
-      } else {
-        return value.toFixed(1);
-      }
+      if (type === 'peak') return value.toFixed(1);
+      if (isHighPrecision) return parseFloat(value.toFixed(3)).toString();
+      return value.toFixed(1);
     }
 
-    // ========== GET DATA ==========
     function getValues() {
       const vals = [];
       for (let i = 1; i <= 10; i++) {
@@ -679,10 +667,8 @@
       return labels;
     }
 
-    // ========== CALCULATE ==========
     function calculate() {
       const v = getValues();
-      
       const filled = v.slice(0, 6).filter(x => x !== null);
       const avg6 = filled.length > 0 ? filled.reduce((a, b) => a + b, 0) / filled.length : 0;
       const seventh = v[6];
@@ -694,13 +680,9 @@
         const n9 = v[8] !== null ? v[8] : 0;
         const n10 = v[9] !== null ? v[9] : 0;
 
-        const rawNationwide = (avg6 / seventh) * n8;
-        const rawSeoul = (avg6 / seventh) * n9;
-        const rawPeak = (avg6 / seventh) * n10;
-
-        nationwide = formatByNetwork(rawNationwide, 'main');
-        seoul      = formatByNetwork(rawSeoul, 'main');
-        peak       = formatByNetwork(rawPeak, 'peak');
+        nationwide = formatByNetwork((avg6 / seventh) * n8, 'main');
+        seoul      = formatByNetwork((avg6 / seventh) * n9, 'main');
+        peak       = formatByNetwork((avg6 / seventh) * n10, 'peak');
       }
 
       document.getElementById('nationwide').textContent = nationwide === '–' ? '–' : nationwide + '%';
@@ -708,7 +690,6 @@
       document.getElementById('peak').textContent       = peak === '–' ? '–' : peak + '%';
     }
 
-    // ========== LOAD DATA ==========
     function loadEpisode(index) {
       const row = ledger[index];
       if (!row) return;
@@ -719,7 +700,6 @@
       document.getElementById('day').value = row.day || 'Sat';
       updateFixedLabels();
 
-      // Load image
       if (row.image) {
         currentImageBase64 = row.image;
         document.getElementById('imagePreview').innerHTML = `<img src="${row.image}" alt="poster">`;
@@ -732,10 +712,7 @@
       }
 
       for (let i = 0; i < 10; i++) {
-        const val = (row.values && row.values[i] !== null && row.values[i] !== undefined)
-          ? row.values[i]
-          : '';
-        document.getElementById(`val${i + 1}`).value = val;
+        document.getElementById(`val${i + 1}`).value = (row.values && row.values[i] !== null && row.values[i] !== undefined) ? row.values[i] : '';
       }
 
       calculate();
@@ -747,7 +724,6 @@
       showToast(`Loaded ${row.drama} - Ep ${row.ep}`);
     }
 
-    // ========== SAVE ==========
     function saveEpisode() {
       const drama = document.getElementById('dramaName').value.trim();
       if (!drama) {
@@ -769,38 +745,23 @@
       const existIndex = ledger.findIndex(item => item.drama === drama && item.ep === ep);
 
       const newRow = {
-        drama,
-        network,
-        ep,
-        day,
-        avg: avg,
-        estimate: estimate,
-        nielsen: null,
-        diff: null,
-        values: v,
-        labels: labels,
+        drama, network, ep, day,
+        avg, estimate,
+        nielsen: null, diff: null,
+        values: v, labels: labels,
         image: currentImageBase64
       };
 
       if (existIndex >= 0) {
         newRow.nielsen = ledger[existIndex].nielsen;
-        newRow.diff = ledger[existIndex].nielsen !== null
-          ? (newRow.estimate - ledger[existIndex].nielsen)
-          : null;
-        // Keep old image if no new one selected
-        if (!currentImageBase64 && ledger[existIndex].image) {
-          newRow.image = ledger[existIndex].image;
-        }
+        newRow.diff = ledger[existIndex].nielsen !== null ? (newRow.estimate - ledger[existIndex].nielsen) : null;
+        if (!currentImageBase64 && ledger[existIndex].image) newRow.image = ledger[existIndex].image;
         ledger[existIndex] = newRow;
       } else {
         ledger.push(newRow);
       }
 
-      ledger.sort((a, b) => {
-        if (a.drama !== b.drama) return a.drama.localeCompare(b.drama);
-        return a.ep - b.ep;
-      });
-
+      ledger.sort((a, b) => a.drama !== b.drama ? a.drama.localeCompare(b.drama) : a.ep - b.ep);
       localStorage.setItem('ratingLedger', JSON.stringify(ledger));
       updateDramaFilter();
       renderLedger();
@@ -823,12 +784,8 @@
         document.getElementById('network').value = 'ENA';
         clearImage();
       }
-      for (let i = 1; i <= 6; i++) {
-        document.getElementById(`label${i}`).value = '';
-      }
-      for (let i = 1; i <= 10; i++) {
-        document.getElementById(`val${i}`).value = '';
-      }
+      for (let i = 1; i <= 6; i++) document.getElementById(`label${i}`).value = '';
+      for (let i = 1; i <= 10; i++) document.getElementById(`val${i}`).value = '';
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
     }
@@ -845,10 +802,7 @@
         opt.textContent = d;
         filter.appendChild(opt);
       });
-
-      if ([...filter.options].some(o => o.value === currentValue)) {
-        filter.value = currentValue;
-      }
+      if ([...filter.options].some(o => o.value === currentValue)) filter.value = currentValue;
     }
 
     function renderLedger() {
@@ -856,10 +810,7 @@
       const filterValue = document.getElementById('dramaFilter').value;
       tbody.innerHTML = '';
 
-      let filtered = ledger;
-      if (filterValue !== 'all') {
-        filtered = ledger.filter(item => item.drama === filterValue);
-      }
+      let filtered = filterValue === 'all' ? ledger : ledger.filter(item => item.drama === filterValue);
 
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>`;
@@ -868,13 +819,11 @@
 
       filtered.forEach((row) => {
         const realIndex = ledger.findIndex(item => item.drama === row.drama && item.ep === row.ep);
-
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
         tr.dataset.index = realIndex;
 
         const diffClass = row.diff > 0 ? 'diff-pos' : (row.diff < 0 ? 'diff-neg' : '');
-        
         let diffText = '–';
         if (row.diff !== null && row.diff !== undefined) {
           diffText = (row.diff > 0 ? '+' : '') + parseFloat(row.diff.toFixed(6)).toString();
@@ -892,13 +841,8 @@
           <td>${parseFloat(row.avg.toFixed(4))}</td>
           <td>${parseFloat(row.estimate.toFixed(4))}</td>
           <td>
-            <input type="number" class="nielsen-input" 
-                   value="${row.nielsen !== null ? row.nielsen : ''}" 
-                   step="any"
-                   min="0"
-                   onchange="updateNielsen(${realIndex}, this.value)"
-                   onclick="event.stopPropagation()"
-                   placeholder="–">
+            <input type="number" class="nielsen-input" value="${row.nielsen !== null ? row.nielsen : ''}" step="any" min="0"
+                   onchange="updateNielsen(${realIndex}, this.value)" onclick="event.stopPropagation()" placeholder="–">
           </td>
           <td class="${diffClass}">${diffText}</td>
         `;
