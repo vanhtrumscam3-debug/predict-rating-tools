@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f7f5f0;
       --card: rgba(255, 255, 255, 0.92);
       --border: #e8e2d6;
       --gold: #c9a227;
@@ -28,7 +27,6 @@
       line-height: 1.5;
       padding: 32px 16px 60px;
       min-height: 100vh;
-      position: relative;
     }
 
     body::before {
@@ -39,30 +37,19 @@
       z-index: -1;
     }
 
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
+    .container { max-width: 1400px; margin: 0 auto; }
 
-    header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
+    header { text-align: center; margin-bottom: 32px; }
 
     h1 {
       font-family: 'Outfit', sans-serif;
       font-size: 2.3rem;
       font-weight: 700;
-      color: var(--text);
       letter-spacing: -0.8px;
       margin-bottom: 6px;
     }
 
-    .subtitle {
-      color: var(--muted);
-      font-size: 0.95rem;
-      font-weight: 500;
-    }
+    .subtitle { color: var(--muted); font-size: 0.95rem; }
 
     .main-grid {
       display: grid;
@@ -97,7 +84,6 @@
       font-weight: 600;
       padding: 3px 9px;
       border-radius: 20px;
-      letter-spacing: 0.3px;
     }
 
     .selectors {
@@ -118,7 +104,6 @@
       font-weight: 600;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
     select, input[type="number"], input[type="text"] {
@@ -131,7 +116,6 @@
       background: #faf9f6;
       color: var(--text);
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     select:focus, input:focus {
@@ -139,19 +123,10 @@
       box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.15);
     }
 
-    select {
-      min-width: 100px;
-      cursor: pointer;
-    }
+    select { min-width: 100px; cursor: pointer; }
 
-    .drama-field {
-      flex: 1;
-      min-width: 160px;
-    }
-
-    .drama-field input {
-      width: 100%;
-    }
+    .drama-field { flex: 1; min-width: 160px; }
+    .drama-field input { width: 100%; }
 
     .image-upload {
       display: flex;
@@ -188,9 +163,7 @@
       object-fit: cover;
     }
 
-    .image-preview.has-image {
-      border-style: solid;
-    }
+    .image-preview.has-image { border-style: solid; }
 
     .custom-file-btn {
       display: inline-block;
@@ -200,9 +173,7 @@
       border-radius: 8px;
       font-size: 0.85rem;
       font-weight: 600;
-      color: var(--text);
       cursor: pointer;
-      transition: all 0.2s;
     }
 
     .custom-file-btn:hover {
@@ -222,8 +193,6 @@
       font-weight: 700;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding-bottom: 2px;
     }
 
     .rt-label {
@@ -256,7 +225,6 @@
     input.rt-text.fixed-label {
       background: #f0ebe3;
       font-weight: 600;
-      color: var(--text);
       cursor: default;
     }
 
@@ -287,7 +255,6 @@
       font-size: 0.66rem;
       font-weight: 700;
       color: var(--muted);
-      letter-spacing: 0.6px;
       margin-bottom: 6px;
     }
 
@@ -296,7 +263,6 @@
       font-size: 1.55rem;
       font-weight: 700;
       color: var(--gold);
-      letter-spacing: -0.5px;
     }
 
     .actions {
@@ -313,56 +279,26 @@
       font-weight: 600;
       cursor: pointer;
       border: none;
-      transition: all 0.2s;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .btn-primary {
-      background: var(--gold);
-      color: white;
-    }
-    .btn-primary:hover {
-      background: var(--gold-dark);
-      transform: translateY(-1px);
-    }
+    .btn-primary { background: var(--gold); color: white; }
+    .btn-primary:hover { background: var(--gold-dark); }
 
     .btn-outline {
       background: transparent;
       border: 1.5px solid var(--border);
       color: var(--text);
     }
-    .btn-outline:hover {
-      border-color: var(--gold);
-      color: var(--gold);
-    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
-    .btn-secondary {
-      background: #1c1917;
-      color: white;
-    }
-    .btn-secondary:hover {
-      background: #0c0a09;
-      transform: translateY(-1px);
-    }
-
-    .btn-account {
-      background: #3b82f6;
-      color: white;
-    }
-    .btn-account:hover {
-      background: #2563eb;
-    }
+    .btn-secondary { background: #1c1917; color: white; }
+    .btn-account { background: #3b82f6; color: white; }
 
     .filter-bar {
       display: flex;
       gap: 14px;
-      align-items: flex-end;
       margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .filter-bar .field {
-      min-width: 180px;
     }
 
     .table-wrap {
@@ -380,11 +316,10 @@
     th {
       background: #f5f1e9;
       text-align: left;
-      padding: 12px 12px;
+      padding: 12px;
       font-size: 0.68rem;
       font-weight: 700;
       color: var(--muted);
-      letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
@@ -392,22 +327,12 @@
       padding: 10px 12px;
       border-top: 1px solid var(--border);
       font-size: 0.88rem;
-      font-weight: 500;
       vertical-align: middle;
     }
 
-    tr.clickable-row {
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    tr.clickable-row:hover td {
-      background: #f5f0e6;
-    }
-
-    tr.clickable-row.active td {
-      background: #f8f1d8;
-    }
+    tr.clickable-row { cursor: pointer; }
+    tr.clickable-row:hover td { background: #f5f0e6; }
+    tr.clickable-row.active td { background: #f8f1d8; }
 
     .diff-pos { color: var(--success); font-weight: 700; }
     .diff-neg { color: var(--danger); font-weight: 700; }
@@ -420,10 +345,7 @@
       font-weight: 600;
     }
 
-    .drama-name {
-      font-weight: 600;
-      color: var(--text);
-    }
+    .drama-name { font-weight: 600; }
 
     .drama-thumb {
       width: 42px;
@@ -444,11 +366,9 @@
       padding: 13px 26px;
       border-radius: 12px;
       font-size: 0.92rem;
-      font-weight: 500;
       opacity: 0;
       transition: all 0.3s ease;
       z-index: 999;
-      pointer-events: none;
     }
     .toast.show {
       transform: translateX(-50%) translateY(0);
@@ -456,15 +376,7 @@
     }
 
     @media (max-width: 1100px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      h1 { font-size: 1.7rem; }
-      .results { grid-template-columns: 1fr; }
-      .rt-grid { grid-template-columns: 1fr 80px; }
+      .main-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -519,11 +431,8 @@
           </div>
         </div>
 
-        <!-- Image Upload -->
         <div class="image-upload">
-          <div class="image-preview" id="imagePreview" title="Click or drag & drop image here">
-            No image
-          </div>
+          <div class="image-preview" id="imagePreview">No image</div>
           <div>
             <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:6px;">Drama Poster</label>
             <label for="dramaImage" class="custom-file-btn">Choose File</label>
@@ -613,38 +522,51 @@
   <script>
     const HIGH_PRECISION_NETWORKS = ['ENA', 'tvN', 'jTBC', 'TV Chosun', 'Channel A'];
     let currentImageBase64 = null;
+    let ledger = JSON.parse(localStorage.getItem('ratingLedger') || '[]');
 
-    // ===== INIT =====
+    // Create episode options
     const episodeSelect = document.getElementById('episode');
     for (let i = 1; i <= 16; i++) {
       const opt = document.createElement('option');
       opt.value = i;
-      opt.textContent = `Ep ${i}`;
+      opt.textContent = 'Ep ' + i;
       episodeSelect.appendChild(opt);
     }
 
+    // Create 10 input rows
     const rtContainer = document.getElementById('rtInputs');
     for (let i = 1; i <= 10; i++) {
+      // Label side
       const labelDiv = document.createElement('div');
       labelDiv.className = 'rt-label';
 
-      let labelInput = '';
+      const numDiv = document.createElement('div');
+      numDiv.className = 'rt-num';
+      numDiv.textContent = i;
+
+      const labelInput = document.createElement('input');
+      labelInput.type = 'text';
+      labelInput.className = 'rt-text';
+      labelInput.id = 'label' + i;
+      labelInput.maxLength = 40;
+
       if (i <= 6) {
-        // Tự động có KST
-        labelInput = `<input type="text" class="rt-text" id="label${i}" value="KST" maxlength="40">`;
+        labelInput.value = 'KST';
       } else {
-        labelInput = `<input type="text" class="rt-text fixed-label" id="label${i}" readonly>`;
+        labelInput.classList.add('fixed-label');
+        labelInput.readOnly = true;
       }
 
-      labelDiv.innerHTML = `<div class="rt-num">\( {i}</div> \){labelInput}`;
+      labelDiv.appendChild(numDiv);
+      labelDiv.appendChild(labelInput);
 
+      // Value side
       const valueInput = document.createElement('input');
       valueInput.type = 'number';
       valueInput.className = 'rt-value';
-      valueInput.id = `val${i}`;
+      valueInput.id = 'val' + i;
       valueInput.step = 'any';
       valueInput.min = '0';
-      valueInput.placeholder = '';
       valueInput.addEventListener('input', calculate);
 
       rtContainer.appendChild(labelDiv);
@@ -652,41 +574,36 @@
     }
 
     updateFixedLabels();
-
-    let ledger = JSON.parse(localStorage.getItem('ratingLedger') || '[]');
     updateDramaFilter();
     renderLedger();
 
-    // ===== DRAG & DROP =====
+    // ===== Image handling =====
     const dropZone = document.getElementById('imagePreview');
-
     dropZone.addEventListener('click', () => document.getElementById('dramaImage').click());
 
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
-      document.body.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
+      document.body.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
     });
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropZone.addEventListener(evt, () => dropZone.classList.add('drag-over'));
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, () => dropZone.classList.remove('drag-over'));
     });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
-    });
-
-    dropZone.addEventListener('drop', (e) => {
+    dropZone.addEventListener('drop', e => {
       const files = e.dataTransfer.files;
-      if (files.length > 0 && files[0].type.startsWith('image/')) {
+      if (files.length && files[0].type.startsWith('image/')) {
         handleFiles(files[0]);
       } else {
         showToast('Please drop an image file');
       }
     });
 
-    function handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) handleFiles(file);
+    function handleFileSelect(e) {
+      if (e.target.files[0]) handleFiles(e.target.files[0]);
     }
 
     function handleFiles(file) {
@@ -695,7 +612,7 @@
       reader.onload = function(e) {
         currentImageBase64 = e.target.result;
         const preview = document.getElementById('imagePreview');
-        preview.innerHTML = `<img src="${currentImageBase64}" alt="poster">`;
+        preview.innerHTML = '<img src="' + currentImageBase64 + '" alt="poster">';
         preview.classList.add('has-image');
       };
       reader.readAsDataURL(file);
@@ -713,14 +630,14 @@
     function updateFixedLabels() {
       const currentEp = parseInt(document.getElementById('episode').value) || 1;
       const prevEp = Math.max(1, currentEp - 2);
-      document.getElementById('label7').value = `Average Real-time rating (Ep ${prevEp})`;
+      document.getElementById('label7').value = 'Average Real-time rating (Ep ' + prevEp + ')';
       document.getElementById('label8').value = 'Nationwide rating';
       document.getElementById('label9').value = 'Seoul rating';
       document.getElementById('label10').value = 'Peak rating';
     }
 
     function formatByNetwork(value, type) {
-      if (value === null || value === undefined || isNaN(value)) return '–';
+      if (value == null || isNaN(value)) return '–';
       const network = document.getElementById('network').value;
       const isHigh = HIGH_PRECISION_NETWORKS.includes(network);
       if (type === 'peak') return value.toFixed(1);
@@ -730,7 +647,7 @@
     function getValues() {
       const vals = [];
       for (let i = 1; i <= 10; i++) {
-        const raw = document.getElementById(`val${i}`).value.trim();
+        const raw = document.getElementById('val' + i).value.trim();
         vals.push(raw === '' ? null : parseFloat(raw));
       }
       return vals;
@@ -738,7 +655,9 @@
 
     function getLabels() {
       const labels = [];
-      for (let i = 1; i <= 6; i++) labels.push(document.getElementById(`label${i}`).value || '');
+      for (let i = 1; i <= 6; i++) {
+        labels.push(document.getElementById('label' + i).value || '');
+      }
       return labels;
     }
 
@@ -750,9 +669,9 @@
 
       let nationwide = '–', seoul = '–', peak = '–';
       if (seventh !== null && seventh !== 0) {
-        nationwide = formatByNetwork((avg6 / seventh) * (v[7] ?? 0), 'main');
-        seoul      = formatByNetwork((avg6 / seventh) * (v[8] ?? 0), 'main');
-        peak       = formatByNetwork((avg6 / seventh) * (v[9] ?? 0), 'peak');
+        nationwide = formatByNetwork((avg6 / seventh) * (v[7] || 0), 'main');
+        seoul      = formatByNetwork((avg6 / seventh) * (v[8] || 0), 'main');
+        peak       = formatByNetwork((avg6 / seventh) * (v[9] || 0), 'peak');
       }
 
       document.getElementById('nationwide').textContent = nationwide === '–' ? '–' : nationwide + '%';
@@ -773,7 +692,7 @@
       if (row.image) {
         currentImageBase64 = row.image;
         const preview = document.getElementById('imagePreview');
-        preview.innerHTML = `<img src="${row.image}" alt="poster">`;
+        preview.innerHTML = '<img src="' + row.image + '" alt="poster">';
         preview.classList.add('has-image');
         document.getElementById('fileName').textContent = 'Image loaded';
       } else {
@@ -781,17 +700,17 @@
       }
 
       for (let i = 0; i < 6; i++) {
-        document.getElementById(`label${i+1}`).value = row.labels?.[i] || 'KST';
+        document.getElementById('label' + (i + 1)).value = (row.labels && row.labels[i]) ? row.labels[i] : 'KST';
       }
       for (let i = 0; i < 10; i++) {
-        document.getElementById(`val${i+1}`).value = row.values?.[i] ?? '';
+        document.getElementById('val' + (i + 1)).value = (row.values && row.values[i] != null) ? row.values[i] : '';
       }
 
       calculate();
-
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
-      document.querySelector(`tr[data-index="${index}"]`)?.classList.add('active');
-      showToast(`Loaded ${row.drama} - Ep ${row.ep}`);
+      const active = document.querySelector('tr[data-index="' + index + '"]');
+      if (active) active.classList.add('active');
+      showToast('Loaded ' + row.drama + ' - Ep ' + row.ep);
     }
 
     function saveEpisode() {
@@ -816,7 +735,7 @@
       const newRow = {
         drama, network, ep, day, avg, estimate,
         nielsen: null, diff: null,
-        values: v, labels, image: currentImageBase64
+        values: v, labels: labels, image: currentImageBase64
       };
 
       if (existIndex >= 0) {
@@ -832,7 +751,7 @@
       localStorage.setItem('ratingLedger', JSON.stringify(ledger));
       updateDramaFilter();
       renderLedger();
-      showToast(`Saved ${drama} - Ep ${ep}`);
+      showToast('Saved ' + drama + ' - Ep ' + ep);
     }
 
     function nextEpisode() {
@@ -841,36 +760,30 @@
         episodeSelect.value = current + 1;
         updateFixedLabels();
       }
-
-      // Chỉ xóa số, giữ nguyên label 1-6
       for (let i = 1; i <= 10; i++) {
-        document.getElementById(`val${i}`).value = '';
+        document.getElementById('val' + i).value = '';
       }
-
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
-      showToast(`Moved to Ep ${episodeSelect.value}`);
+      showToast('Moved to Ep ' + episodeSelect.value);
     }
 
-    function clearInputs(clearAll = true) {
+    function clearInputs(clearAll) {
       if (clearAll) {
         document.getElementById('dramaName').value = '';
         document.getElementById('network').value = 'ENA';
         clearImage();
         for (let i = 1; i <= 6; i++) {
-          document.getElementById(`label${i}`).value = 'KST';
+          document.getElementById('label' + i).value = 'KST';
         }
       }
-
       for (let i = 1; i <= 10; i++) {
-        document.getElementById(`val${i}`).value = '';
+        document.getElementById('val' + i).value = '';
       }
-
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
     }
 
-    // ===== EXPORT / IMPORT (Account feature) =====
     function exportData() {
       if (ledger.length === 0) {
         showToast('No data to export');
@@ -881,7 +794,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `rating-data-${new Date().toISOString().slice(0,10)}.json`;
+      a.download = 'rating-data-' + new Date().toISOString().slice(0, 10) + '.json';
       a.click();
       URL.revokeObjectURL(url);
       showToast('Data exported successfully!');
@@ -890,14 +803,12 @@
     function importData(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           const imported = JSON.parse(e.target.result);
-          if (!Array.isArray(imported)) throw new Error('Invalid format');
-
-          if (confirm(`Import ${imported.length} records? This will replace current data.`)) {
+          if (!Array.isArray(imported)) throw new Error('Invalid');
+          if (confirm('Import ' + imported.length + ' records? This will replace current data.')) {
             ledger = imported;
             localStorage.setItem('ratingLedger', JSON.stringify(ledger));
             updateDramaFilter();
@@ -916,7 +827,7 @@
       const filter = document.getElementById('dramaFilter');
       const currentValue = filter.value;
       const dramas = [...new Set(ledger.map(item => item.drama))].sort();
-      filter.innerHTML = `<option value="all">All Dramas</option>`;
+      filter.innerHTML = '<option value="all">All Dramas</option>';
       dramas.forEach(d => {
         const opt = document.createElement('option');
         opt.value = d;
@@ -933,8 +844,8 @@
 
       let filtered = filterValue === 'all' ? ledger : ledger.filter(item => item.drama === filterValue);
 
-      if (!filtered.length) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>`;
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>';
         return;
       }
 
@@ -944,29 +855,25 @@
         tr.className = 'clickable-row';
         tr.dataset.index = realIndex;
 
-        const diffClass = row.diff > 0 ? 'diff-pos' : row.diff < 0 ? 'diff-neg' : '';
+        const diffClass = row.diff > 0 ? 'diff-pos' : (row.diff < 0 ? 'diff-neg' : '');
         let diffText = '–';
         if (row.diff != null) diffText = (row.diff > 0 ? '+' : '') + parseFloat(row.diff.toFixed(6));
 
         const thumb = row.image
-          ? `<img src="${row.image}" class="drama-thumb" alt="poster">`
-          : `<div class="drama-thumb" style="display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#aaa;">N/A</div>`;
+          ? '<img src="' + row.image + '" class="drama-thumb" alt="poster">'
+          : '<div class="drama-thumb" style="display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#aaa;">N/A</div>';
 
-        tr.innerHTML = `
-          <td>${thumb}</td>
-          <td class="drama-name">${row.drama}</td>
-          <td>${row.network || '–'}</td>
-          <td><strong>Ep \( {row.ep}</strong> <span style="color:var(--muted);font-size:0.8rem"> \){row.day || ''}</span></td>
-          <td>${parseFloat(row.avg.toFixed(4))}</td>
-          <td>${parseFloat(row.estimate.toFixed(4))}</td>
-          <td>
-            <input type="number" class="nielsen-input" value="${row.nielsen ?? ''}" step="any" min="0"
-                   onchange="updateNielsen(${realIndex}, this.value)" onclick="event.stopPropagation()" placeholder="–">
-          </td>
-          <td class="\( {diffClass}"> \){diffText}</td>
-        `;
+        tr.innerHTML = 
+          '<td>' + thumb + '</td>' +
+          '<td class="drama-name">' + row.drama + '</td>' +
+          '<td>' + (row.network || '–') + '</td>' +
+          '<td><strong>Ep ' + row.ep + '</strong> <span style="color:var(--muted);font-size:0.8rem">' + (row.day || '') + '</span></td>' +
+          '<td>' + parseFloat(row.avg.toFixed(4)) + '</td>' +
+          '<td>' + parseFloat(row.estimate.toFixed(4)) + '</td>' +
+          '<td><input type="number" class="nielsen-input" value="' + (row.nielsen != null ? row.nielsen : '') + '" step="any" min="0" onchange="updateNielsen(' + realIndex + ', this.value)" onclick="event.stopPropagation()" placeholder="–"></td>' +
+          '<td class="' + diffClass + '">' + diffText + '</td>';
 
-        tr.addEventListener('click', e => {
+        tr.addEventListener('click', function(e) {
           if (e.target.classList.contains('nielsen-input')) return;
           loadEpisode(realIndex);
         });
@@ -1007,7 +914,7 @@
       const t = document.getElementById('toast');
       t.textContent = msg;
       t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2200);
+      setTimeout(function() { t.classList.remove('show'); }, 2200);
     }
 
     calculate();
