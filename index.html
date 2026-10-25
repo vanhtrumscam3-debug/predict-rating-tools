@@ -8,7 +8,7 @@
   <style>
     :root {
       --bg: #f7f5f0;
-      --card: #ffffff;
+      --card: rgba(255, 255, 255, 0.92);
       --border: #e8e2d6;
       --gold: #c9a227;
       --gold-dark: #a8841a;
@@ -16,21 +16,28 @@
       --muted: #78716c;
       --success: #15803d;
       --danger: #b91c1c;
-      --shadow: 0 4px 24px rgba(0,0,0,0.05);
+      --shadow: 0 8px 32px rgba(0,0,0,0.08);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      background-color: #f7f5f0;
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(201, 162, 39, 0.06) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(201, 162, 39, 0.05) 0px, transparent 50%);
+      background: #f7f5f0 url('https://images.unsplash.com/photo-1557683316-973673baf926?w=1920&q=80') center/cover no-repeat fixed;
       color: var(--text);
       line-height: 1.5;
       padding: 32px 16px 60px;
       min-height: 100vh;
+      position: relative;
+    }
+
+    /* Overlay để chữ dễ đọc hơn */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(247, 245, 240, 0.82);
+      z-index: -1;
     }
 
     .container {
@@ -67,6 +74,7 @@
 
     .card {
       background: var(--card);
+      backdrop-filter: blur(12px);
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 24px;
@@ -146,7 +154,6 @@
       width: 100%;
     }
 
-    /* Image upload */
     .image-upload {
       display: flex;
       align-items: center;
@@ -437,7 +444,7 @@
     </header>
 
     <div class="main-grid">
-      <!-- LEFT: Real-time Rating Input -->
+      <!-- LEFT -->
       <div class="card">
         <div class="card-title">
           Real-time Rating Input
@@ -480,7 +487,6 @@
           </div>
         </div>
 
-        <!-- Image Upload -->
         <div class="image-upload">
           <div class="image-preview" id="imagePreview">No image</div>
           <div>
@@ -519,7 +525,7 @@
         </div>
       </div>
 
-      <!-- RIGHT: Rating Checker -->
+      <!-- RIGHT -->
       <div class="card">
         <div class="card-title">
           Rating Checker
@@ -580,17 +586,11 @@
       const labelDiv = document.createElement('div');
       labelDiv.className = 'rt-label';
 
-      let labelInput = '';
-      if (i <= 6) {
-        labelInput = `<input type="text" class="rt-text" id="label${i}" placeholder="" maxlength="40">`;
-      } else {
-        labelInput = `<input type="text" class="rt-text fixed-label" id="label${i}" readonly>`;
-      }
+      let labelInput = i <= 6
+        ? `<input type="text" class="rt-text" id="label${i}" placeholder="" maxlength="40">`
+        : `<input type="text" class="rt-text fixed-label" id="label${i}" readonly>`;
 
-      labelDiv.innerHTML = `
-        <div class="rt-num">${i}</div>
-        ${labelInput}
-      `;
+      labelDiv.innerHTML = `<div class="rt-num">${i}</div>${labelInput}`;
 
       const valueInput = document.createElement('input');
       valueInput.type = 'number';
@@ -614,9 +614,8 @@
     function previewImage(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = e => {
         currentImageBase64 = e.target.result;
         document.getElementById('imagePreview').innerHTML = `<img src="${currentImageBase64}" alt="poster">`;
       };
@@ -632,7 +631,6 @@
     function updateFixedLabels() {
       const currentEp = parseInt(document.getElementById('episode').value) || 1;
       const prevEp = Math.max(1, currentEp - 2);
-
       document.getElementById('label7').value = `Average Real-time rating (Ep ${prevEp})`;
       document.getElementById('label8').value = 'Nationwide rating';
       document.getElementById('label9').value = 'Seoul rating';
@@ -641,13 +639,10 @@
 
     function formatByNetwork(value, type) {
       if (value === null || value === undefined || isNaN(value)) return '–';
-
       const network = document.getElementById('network').value;
-      const isHighPrecision = HIGH_PRECISION_NETWORKS.includes(network);
-
+      const isHigh = HIGH_PRECISION_NETWORKS.includes(network);
       if (type === 'peak') return value.toFixed(1);
-      if (isHighPrecision) return parseFloat(value.toFixed(3)).toString();
-      return value.toFixed(1);
+      return isHigh ? parseFloat(value.toFixed(3)).toString() : value.toFixed(1);
     }
 
     function getValues() {
@@ -661,28 +656,21 @@
 
     function getLabels() {
       const labels = [];
-      for (let i = 1; i <= 6; i++) {
-        labels.push(document.getElementById(`label${i}`).value || '');
-      }
+      for (let i = 1; i <= 6; i++) labels.push(document.getElementById(`label${i}`).value || '');
       return labels;
     }
 
     function calculate() {
       const v = getValues();
       const filled = v.slice(0, 6).filter(x => x !== null);
-      const avg6 = filled.length > 0 ? filled.reduce((a, b) => a + b, 0) / filled.length : 0;
+      const avg6 = filled.length ? filled.reduce((a, b) => a + b, 0) / filled.length : 0;
       const seventh = v[6];
 
       let nationwide = '–', seoul = '–', peak = '–';
-
       if (seventh !== null && seventh !== 0) {
-        const n8 = v[7] !== null ? v[7] : 0;
-        const n9 = v[8] !== null ? v[8] : 0;
-        const n10 = v[9] !== null ? v[9] : 0;
-
-        nationwide = formatByNetwork((avg6 / seventh) * n8, 'main');
-        seoul      = formatByNetwork((avg6 / seventh) * n9, 'main');
-        peak       = formatByNetwork((avg6 / seventh) * n10, 'peak');
+        nationwide = formatByNetwork((avg6 / seventh) * (v[7] ?? 0), 'main');
+        seoul      = formatByNetwork((avg6 / seventh) * (v[8] ?? 0), 'main');
+        peak       = formatByNetwork((avg6 / seventh) * (v[9] ?? 0), 'peak');
       }
 
       document.getElementById('nationwide').textContent = nationwide === '–' ? '–' : nationwide + '%';
@@ -703,24 +691,15 @@
       if (row.image) {
         currentImageBase64 = row.image;
         document.getElementById('imagePreview').innerHTML = `<img src="${row.image}" alt="poster">`;
-      } else {
-        clearImage();
-      }
+      } else clearImage();
 
-      for (let i = 0; i < 6; i++) {
-        document.getElementById(`label${i + 1}`).value = (row.labels && row.labels[i]) ? row.labels[i] : '';
-      }
-
-      for (let i = 0; i < 10; i++) {
-        document.getElementById(`val${i + 1}`).value = (row.values && row.values[i] !== null && row.values[i] !== undefined) ? row.values[i] : '';
-      }
+      for (let i = 0; i < 6; i++) document.getElementById(`label${i+1}`).value = row.labels?.[i] || '';
+      for (let i = 0; i < 10; i++) document.getElementById(`val${i+1}`).value = row.values?.[i] ?? '';
 
       calculate();
 
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
-      const activeRow = document.querySelector(`tr[data-index="${index}"]`);
-      if (activeRow) activeRow.classList.add('active');
-
+      document.querySelector(`tr[data-index="${index}"]`)?.classList.add('active');
       showToast(`Loaded ${row.drama} - Ep ${row.ep}`);
     }
 
@@ -737,29 +716,24 @@
       const day = document.getElementById('day').value;
       const v = getValues();
       const labels = getLabels();
-
       const filledAll = v.filter(x => x !== null);
-      const avg = filledAll.length > 0 ? filledAll.reduce((a, b) => a + b, 0) / filledAll.length : 0;
+      const avg = filledAll.length ? filledAll.reduce((a, b) => a + b, 0) / filledAll.length : 0;
       const estimate = parseFloat(document.getElementById('nationwide').textContent) || 0;
 
       const existIndex = ledger.findIndex(item => item.drama === drama && item.ep === ep);
 
       const newRow = {
-        drama, network, ep, day,
-        avg, estimate,
+        drama, network, ep, day, avg, estimate,
         nielsen: null, diff: null,
-        values: v, labels: labels,
-        image: currentImageBase64
+        values: v, labels, image: currentImageBase64
       };
 
       if (existIndex >= 0) {
         newRow.nielsen = ledger[existIndex].nielsen;
-        newRow.diff = ledger[existIndex].nielsen !== null ? (newRow.estimate - ledger[existIndex].nielsen) : null;
+        newRow.diff = ledger[existIndex].nielsen != null ? newRow.estimate - ledger[existIndex].nielsen : null;
         if (!currentImageBase64 && ledger[existIndex].image) newRow.image = ledger[existIndex].image;
         ledger[existIndex] = newRow;
-      } else {
-        ledger.push(newRow);
-      }
+      } else ledger.push(newRow);
 
       ledger.sort((a, b) => a.drama !== b.drama ? a.drama.localeCompare(b.drama) : a.ep - b.ep);
       localStorage.setItem('ratingLedger', JSON.stringify(ledger));
@@ -794,7 +768,6 @@
       const filter = document.getElementById('dramaFilter');
       const currentValue = filter.value;
       const dramas = [...new Set(ledger.map(item => item.drama))].sort();
-
       filter.innerHTML = `<option value="all">All Dramas</option>`;
       dramas.forEach(d => {
         const opt = document.createElement('option');
@@ -812,24 +785,22 @@
 
       let filtered = filterValue === 'all' ? ledger : ledger.filter(item => item.drama === filterValue);
 
-      if (filtered.length === 0) {
+      if (!filtered.length) {
         tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>`;
         return;
       }
 
-      filtered.forEach((row) => {
+      filtered.forEach(row => {
         const realIndex = ledger.findIndex(item => item.drama === row.drama && item.ep === row.ep);
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
         tr.dataset.index = realIndex;
 
-        const diffClass = row.diff > 0 ? 'diff-pos' : (row.diff < 0 ? 'diff-neg' : '');
+        const diffClass = row.diff > 0 ? 'diff-pos' : row.diff < 0 ? 'diff-neg' : '';
         let diffText = '–';
-        if (row.diff !== null && row.diff !== undefined) {
-          diffText = (row.diff > 0 ? '+' : '') + parseFloat(row.diff.toFixed(6)).toString();
-        }
+        if (row.diff != null) diffText = (row.diff > 0 ? '+' : '') + parseFloat(row.diff.toFixed(6));
 
-        const thumb = row.image 
+        const thumb = row.image
           ? `<img src="${row.image}" class="drama-thumb" alt="poster">`
           : `<div class="drama-thumb" style="display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#aaa;">N/A</div>`;
 
@@ -841,13 +812,13 @@
           <td>${parseFloat(row.avg.toFixed(4))}</td>
           <td>${parseFloat(row.estimate.toFixed(4))}</td>
           <td>
-            <input type="number" class="nielsen-input" value="${row.nielsen !== null ? row.nielsen : ''}" step="any" min="0"
+            <input type="number" class="nielsen-input" value="${row.nielsen ?? ''}" step="any" min="0"
                    onchange="updateNielsen(${realIndex}, this.value)" onclick="event.stopPropagation()" placeholder="–">
           </td>
           <td class="${diffClass}">${diffText}</td>
         `;
 
-        tr.addEventListener('click', (e) => {
+        tr.addEventListener('click', e => {
           if (e.target.classList.contains('nielsen-input')) return;
           loadEpisode(realIndex);
         });
