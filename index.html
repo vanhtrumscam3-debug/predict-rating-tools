@@ -174,7 +174,6 @@
       overflow: hidden;
       cursor: pointer;
       transition: all 0.2s;
-      position: relative;
     }
 
     .image-preview:hover,
@@ -346,6 +345,14 @@
       transform: translateY(-1px);
     }
 
+    .btn-account {
+      background: #3b82f6;
+      color: white;
+    }
+    .btn-account:hover {
+      background: #2563eb;
+    }
+
     .filter-bar {
       display: flex;
       gap: 14px;
@@ -512,7 +519,7 @@
           </div>
         </div>
 
-        <!-- Image Upload with Drag & Drop -->
+        <!-- Image Upload -->
         <div class="image-upload">
           <div class="image-preview" id="imagePreview" title="Click or drag & drop image here">
             No image
@@ -593,6 +600,9 @@
         <div class="actions" style="margin-top: 16px;">
           <button class="btn btn-secondary" onclick="saveTable()">Save Table</button>
           <button class="btn btn-outline" onclick="clearTable()">Clear Table</button>
+          <button class="btn btn-account" onclick="exportData()">Export Data</button>
+          <button class="btn btn-account" onclick="document.getElementById('importFile').click()">Import Data</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
         </div>
       </div>
     </div>
@@ -618,11 +628,15 @@
       const labelDiv = document.createElement('div');
       labelDiv.className = 'rt-label';
 
-      let labelInput = i <= 6
-        ? `<input type="text" class="rt-text" id="label${i}" placeholder="" maxlength="40">`
-        : `<input type="text" class="rt-text fixed-label" id="label${i}" readonly>`;
+      let labelInput = '';
+      if (i <= 6) {
+        // Tự động có KST
+        labelInput = `<input type="text" class="rt-text" id="label${i}" value="KST" maxlength="40">`;
+      } else {
+        labelInput = `<input type="text" class="rt-text fixed-label" id="label${i}" readonly>`;
+      }
 
-      labelDiv.innerHTML = `<div class="rt-num">${i}</div>${labelInput}`;
+      labelDiv.innerHTML = `<div class="rt-num">\( {i}</div> \){labelInput}`;
 
       const valueInput = document.createElement('input');
       valueInput.type = 'number';
@@ -646,19 +660,12 @@
     // ===== DRAG & DROP =====
     const dropZone = document.getElementById('imagePreview');
 
-    dropZone.addEventListener('click', () => {
-      document.getElementById('dramaImage').click();
-    });
+    dropZone.addEventListener('click', () => document.getElementById('dramaImage').click());
 
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, preventDefaults, false);
-      document.body.addEventListener(eventName, preventDefaults, false);
+      dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+      document.body.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
     });
-
-    function preventDefaults(e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
 
     ['dragenter', 'dragover'].forEach(eventName => {
       dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
@@ -675,9 +682,8 @@
       } else {
         showToast('Please drop an image file');
       }
-    }, false);
+    });
 
-    // ===== FILE HANDLING =====
     function handleFileSelect(event) {
       const file = event.target.files[0];
       if (file) handleFiles(file);
@@ -704,7 +710,6 @@
       preview.classList.remove('has-image');
     }
 
-    // ===== OTHER FUNCTIONS =====
     function updateFixedLabels() {
       const currentEp = parseInt(document.getElementById('episode').value) || 1;
       const prevEp = Math.max(1, currentEp - 2);
@@ -775,8 +780,12 @@
         clearImage();
       }
 
-      for (let i = 0; i < 6; i++) document.getElementById(`label${i+1}`).value = row.labels?.[i] || '';
-      for (let i = 0; i < 10; i++) document.getElementById(`val${i+1}`).value = row.values?.[i] ?? '';
+      for (let i = 0; i < 6; i++) {
+        document.getElementById(`label${i+1}`).value = row.labels?.[i] || 'KST';
+      }
+      for (let i = 0; i < 10; i++) {
+        document.getElementById(`val${i+1}`).value = row.values?.[i] ?? '';
+      }
 
       calculate();
 
@@ -826,7 +835,6 @@
       showToast(`Saved ${drama} - Ep ${ep}`);
     }
 
-    // ===== NEXT EPISODE - Keep labels 1-6, clear only numbers =====
     function nextEpisode() {
       let current = parseInt(episodeSelect.value);
       if (current < 16) {
@@ -834,7 +842,7 @@
         updateFixedLabels();
       }
 
-      // Only clear the number inputs (val1 → val10)
+      // Chỉ xóa số, giữ nguyên label 1-6
       for (let i = 1; i <= 10; i++) {
         document.getElementById(`val${i}`).value = '';
       }
@@ -844,25 +852,64 @@
       showToast(`Moved to Ep ${episodeSelect.value}`);
     }
 
-    // clearAll = true → clear everything (including labels + drama)
-    // clearAll = false → only clear numbers
     function clearInputs(clearAll = true) {
       if (clearAll) {
         document.getElementById('dramaName').value = '';
         document.getElementById('network').value = 'ENA';
         clearImage();
         for (let i = 1; i <= 6; i++) {
-          document.getElementById(`label${i}`).value = '';
+          document.getElementById(`label${i}`).value = 'KST';
         }
       }
 
-      // Always clear numbers
       for (let i = 1; i <= 10; i++) {
         document.getElementById(`val${i}`).value = '';
       }
 
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
+    }
+
+    // ===== EXPORT / IMPORT (Account feature) =====
+    function exportData() {
+      if (ledger.length === 0) {
+        showToast('No data to export');
+        return;
+      }
+      const dataStr = JSON.stringify(ledger, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `rating-data-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Data exported successfully!');
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!Array.isArray(imported)) throw new Error('Invalid format');
+
+          if (confirm(`Import ${imported.length} records? This will replace current data.`)) {
+            ledger = imported;
+            localStorage.setItem('ratingLedger', JSON.stringify(ledger));
+            updateDramaFilter();
+            renderLedger();
+            showToast('Data imported successfully!');
+          }
+        } catch (err) {
+          showToast('Invalid JSON file');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
     }
 
     function updateDramaFilter() {
@@ -909,14 +956,14 @@
           <td>${thumb}</td>
           <td class="drama-name">${row.drama}</td>
           <td>${row.network || '–'}</td>
-          <td><strong>Ep ${row.ep}</strong> <span style="color:var(--muted);font-size:0.8rem">${row.day || ''}</span></td>
+          <td><strong>Ep \( {row.ep}</strong> <span style="color:var(--muted);font-size:0.8rem"> \){row.day || ''}</span></td>
           <td>${parseFloat(row.avg.toFixed(4))}</td>
           <td>${parseFloat(row.estimate.toFixed(4))}</td>
           <td>
             <input type="number" class="nielsen-input" value="${row.nielsen ?? ''}" step="any" min="0"
                    onchange="updateNielsen(${realIndex}, this.value)" onclick="event.stopPropagation()" placeholder="–">
           </td>
-          <td class="${diffClass}">${diffText}</td>
+          <td class="\( {diffClass}"> \){diffText}</td>
         `;
 
         tr.addEventListener('click', e => {
