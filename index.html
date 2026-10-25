@@ -217,17 +217,35 @@
     }
 
     input.rt-text {
-      flex: 1;
-      min-width: 0;
-      width: 100%;
       padding: 8px 10px;
       font-size: 0.88rem;
+      transition: width 0.2s ease;
+    }
+
+    /* Ô trống của 6 dòng đầu */
+    input.rt-text.editable-label {
+      width: 70px;
+      min-width: 60px;
+      flex: 0 1 auto;
+    }
+
+    input.rt-text.editable-label:focus {
+      width: 130px;
     }
 
     input.rt-text.fixed-label {
+      flex: 1;
       background: #f0ebe3;
       font-weight: 600;
       cursor: default;
+    }
+
+    .kst-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+      user-select: none;
     }
 
     input.rt-value {
@@ -538,7 +556,6 @@
     // Create 10 input rows
     const rtContainer = document.getElementById('rtInputs');
     for (let i = 1; i <= 10; i++) {
-      // Label side
       const labelDiv = document.createElement('div');
       labelDiv.className = 'rt-label';
 
@@ -553,14 +570,25 @@
       labelInput.maxLength = 40;
 
       if (i <= 6) {
-        labelInput.value = 'KST';
+        // Ô trống có thể gõ + chữ KST cố định
+        labelInput.classList.add('editable-label');
+        labelInput.placeholder = '';
+
+        const kstSpan = document.createElement('span');
+        kstSpan.className = 'kst-text';
+        kstSpan.textContent = 'KST';
+
+        labelDiv.appendChild(numDiv);
+        labelDiv.appendChild(labelInput);
+        labelDiv.appendChild(kstSpan);
       } else {
+        // Ô 7-10: fixed label
         labelInput.classList.add('fixed-label');
         labelInput.readOnly = true;
-      }
 
-      labelDiv.appendChild(numDiv);
-      labelDiv.appendChild(labelInput);
+        labelDiv.appendChild(numDiv);
+        labelDiv.appendChild(labelInput);
+      }
 
       // Value side
       const valueInput = document.createElement('input');
@@ -702,7 +730,7 @@
       }
 
       for (let i = 0; i < 6; i++) {
-        document.getElementById('label' + (i + 1)).value = (row.labels && row.labels[i]) ? row.labels[i] : 'KST';
+        document.getElementById('label' + (i + 1)).value = (row.labels && row.labels[i]) ? row.labels[i] : '';
       }
       for (let i = 0; i < 10; i++) {
         document.getElementById('val' + (i + 1)).value = (row.values && row.values[i] != null) ? row.values[i] : '';
@@ -772,7 +800,7 @@
         episodeSelect.value = current + 1;
         updateFixedLabels();
       }
-      // Keep labels 1-6, only clear numbers
+      // Keep the text in label 1-6, only clear numbers
       for (let i = 1; i <= 10; i++) {
         document.getElementById('val' + i).value = '';
       }
@@ -787,7 +815,7 @@
         document.getElementById('network').value = 'ENA';
         clearImage();
         for (let i = 1; i <= 6; i++) {
-          document.getElementById('label' + i).value = 'KST';
+          document.getElementById('label' + i).value = '';
         }
       }
       for (let i = 1; i <= 10; i++) {
