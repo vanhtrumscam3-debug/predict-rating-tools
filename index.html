@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Predict Nationwide Rating Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f2ee;
+      --card: #ffffff;
+      --border: #e4dfd6;
+      --gold: #c9a227;
+      --gold-dark: #a8841a;
+      --text: #1c1917;
+      --muted: #78716c;
+      --success: #15803d;
+      --danger: #b91c1c;
+      --shadow: 0 4px 24px rgba(0,0,0,0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 32px 16px 60px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.3rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.8px;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title span {
+      background: var(--gold);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    .selectors {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 500;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #faf9f6;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.15);
+    }
+
+    select {
+      min-width: 100px;
+      cursor: pointer;
+    }
+
+    .drama-field {
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .drama-field input {
+      width: 100%;
+    }
+
+    .rt-grid {
+      display: grid;
+      grid-template-columns: 1fr 90px;
+      gap: 8px 10px;
+      margin-bottom: 6px;
+    }
+
+    .rt-header {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding-bottom: 2px;
+    }
+
+    .rt-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rt-num {
+      width: 24px;
+      height: 24px;
+      background: #f0ebe3;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    input.rt-text {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+    }
+
+    input.rt-text.fixed-label {
+      background: #f0ebe3;
+      font-weight: 600;
+      color: var(--text);
+      cursor: default;
+    }
+
+    input.rt-value {
+      text-align: center;
+      font-weight: 600;
+      width: 100%;
+      padding: 8px 6px;
+      font-size: 0.88rem;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .result-box {
+      background: #faf9f6;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 10px;
+      text-align: center;
+    }
+
+    .result-label {
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+
+    .result-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: -0.5px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--gold-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .btn-secondary {
+      background: #1c1917;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background: #0c0a09;
+      transform: translateY(-1px);
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 14px;
+      align-items: flex-end;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar .field {
+      min-width: 180px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 560px;
+    }
+
+    th {
+      background: #f5f1e9;
+      text-align: left;
+      padding: 12px 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 11px 12px;
+      border-top: 1px solid var(--border);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    tr.clickable-row {
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    tr.clickable-row:hover td {
+      background: #f5f0e6;
+    }
+
+    tr.clickable-row.active td {
+      background: #f8f1d8;
+    }
+
+    .diff-pos { color: var(--success); font-weight: 700; }
+    .diff-neg { color: var(--danger); font-weight: 700; }
+
+    input.nielsen-input {
+      width: 80px;
+      padding: 6px 8px;
+      font-size: 0.85rem;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .drama-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1c1917;
+      color: white;
+      padding: 13px 26px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 999;
+      pointer-events: none;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 1100px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.7rem; }
+      .results { grid-template-columns: 1fr; }
+      .rt-grid { grid-template-columns: 1fr 80px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Predict Nationwide Rating Tools</h1>
+      <p class="subtitle">Nationwide & Seoul Rating Prediction Tool</p>
+    </header>
+
+    <div class="main-grid">
+      <!-- LEFT: Real-time Rating Input -->
+      <div class="card">
+        <div class="card-title">
+          Real-time Rating Input
+          <span>10 slots</span>
+        </div>
+
+        <div class="selectors">
+          <div class="field drama-field">
+            <label>Drama Name</label>
+            <input type="text" id="dramaName" placeholder="Enter drama name..." maxlength="80">
+          </div>
+          <div class="field">
+            <label>Network</label>
+            <select id="network" onchange="calculate()">
+              <option value="ENA">ENA</option>
+              <option value="tvN">tvN</option>
+              <option value="SBS">SBS</option>
+              <option value="MBC">MBC</option>
+              <option value="KBS2">KBS2</option>
+              <option value="jTBC">jTBC</option>
+              <option value="TV Chosun">TV Chosun</option>
+              <option value="Channel A">Channel A</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Episode</label>
+            <select id="episode" onchange="updateFixedLabels()"></select>
+          </div>
+          <div class="field">
+            <label>Day</label>
+            <select id="day">
+              <option value="Mon">Mon</option>
+              <option value="Tue">Tue</option>
+              <option value="Wed">Wed</option>
+              <option value="Thu">Thu</option>
+              <option value="Fri">Fri</option>
+              <option value="Sat">Sat</option>
+              <option value="Sun">Sun</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <div class="rt-grid">
+            <div class="rt-header">Label / Note</div>
+            <div class="rt-header" style="text-align:center">Rating %</div>
+          </div>
+          <div class="rt-grid" id="rtInputs"></div>
+        </div>
+
+        <div class="results">
+          <div class="result-box">
+            <div class="result-label">NATIONWIDE</div>
+            <div class="result-value" id="nationwide">–</div>
+          </div>
+          <div class="result-box">
+            <div class="result-label">SEOUL</div>
+            <div class="result-value" id="seoul">–</div>
+          </div>
+          <div class="result-box">
+            <div class="result-label">PEAK</div>
+            <div class="result-value" id="peak">–</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" onclick="saveEpisode()">Save Episode</button>
+          <button class="btn btn-outline" onclick="nextEpisode()">Next Episode</button>
+          <button class="btn btn-outline" onclick="clearInputs()">Clear Inputs</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Rating Checker -->
+      <div class="card">
+        <div class="card-title">
+          Rating Checker
+          <span>History</span>
+        </div>
+
+        <div class="filter-bar">
+          <div class="field">
+            <label>Filter by Drama</label>
+            <select id="dramaFilter" onchange="renderLedger()">
+              <option value="all">All Dramas</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Drama</th>
+                <th>Network</th>
+                <th>Episode</th>
+                <th>Rating Avg</th>
+                <th>Estimate</th>
+                <th>Nielsen</th>
+                <th>Diff</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerBody"></tbody>
+          </table>
+        </div>
+
+        <div class="actions" style="margin-top: 16px;">
+          <button class="btn btn-secondary" onclick="saveTable()">Save Table</button>
+          <button class="btn btn-outline" onclick="clearTable()">Clear Table</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Networks that use 3 decimal places for Nationwide & Seoul
+    const HIGH_PRECISION_NETWORKS = ['ENA', 'tvN', 'jTBC', 'TV Chosun', 'Channel A'];
+
+    // ========== INIT ==========
+    const episodeSelect = document.getElementById('episode');
+    for (let i = 1; i <= 16; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `Ep ${i}`;
+      episodeSelect.appendChild(opt);
+    }
+
+    const rtContainer = document.getElementById('rtInputs');
+    for (let i = 1; i <= 10; i++) {
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'rt-label';
+
+      let labelInput = '';
+      if (i <= 6) {
+        labelInput = `<input type="text" class="rt-text" id="label${i}" placeholder="" maxlength="40">`;
+      } else {
+        labelInput = `<input type="text" class="rt-text fixed-label" id="label${i}" readonly>`;
+      }
+
+      labelDiv.innerHTML = `
+        <div class="rt-num">${i}</div>
+        ${labelInput}
+      `;
+
+      const valueInput = document.createElement('input');
+      valueInput.type = 'number';
+      valueInput.className = 'rt-value';
+      valueInput.id = `val${i}`;
+      valueInput.step = 'any';
+      valueInput.min = '0';
+      valueInput.placeholder = '';
+      valueInput.addEventListener('input', calculate);
+
+      rtContainer.appendChild(labelDiv);
+      rtContainer.appendChild(valueInput);
+    }
+
+    updateFixedLabels();
+
+    let ledger = JSON.parse(localStorage.getItem('ratingLedger') || '[]');
+    updateDramaFilter();
+    renderLedger();
+
+    // ========== FIXED LABELS ==========
+    function updateFixedLabels() {
+      const currentEp = parseInt(document.getElementById('episode').value) || 1;
+      const prevEp = Math.max(1, currentEp - 2);
+
+      document.getElementById('label7').value = `Average Real-time rating (Ep ${prevEp})`;
+      document.getElementById('label8').value = 'Nationwide rating';
+      document.getElementById('label9').value = 'Seoul rating';
+      document.getElementById('label10').value = 'Peak rating';
+    }
+
+    // ========== FORMAT NUMBER BY NETWORK ==========
+    function formatByNetwork(value, type) {
+      // type: 'main' (Nationwide/Seoul) or 'peak'
+      if (value === null || value === undefined || isNaN(value)) return '–';
+
+      const network = document.getElementById('network').value;
+      const isHighPrecision = HIGH_PRECISION_NETWORKS.includes(network);
+
+      if (type === 'peak') {
+        return value.toFixed(1);           // Peak luôn 1 chữ số
+      }
+
+      // Nationwide & Seoul
+      if (isHighPrecision) {
+        return parseFloat(value.toFixed(3)).toString(); // tối đa 3
+      } else {
+        return value.toFixed(1);           // 1 chữ số
+      }
+    }
+
+    // ========== GET DATA ==========
+    function getValues() {
+      const vals = [];
+      for (let i = 1; i <= 10; i++) {
+        const raw = document.getElementById(`val${i}`).value.trim();
+        vals.push(raw === '' ? null : parseFloat(raw));
+      }
+      return vals;
+    }
+
+    function getLabels() {
+      const labels = [];
+      for (let i = 1; i <= 6; i++) {
+        labels.push(document.getElementById(`label${i}`).value || '');
+      }
+      return labels;
+    }
+
+    // ========== CALCULATE ==========
+    function calculate() {
+      const v = getValues();
+      
+      const filled = v.slice(0, 6).filter(x => x !== null);
+      const avg6 = filled.length > 0 ? filled.reduce((a, b) => a + b, 0) / filled.length : 0;
+      const seventh = v[6];
+
+      let nationwide = '–', seoul = '–', peak = '–';
+
+      if (seventh !== null && seventh !== 0) {
+        const n8 = v[7] !== null ? v[7] : 0;
+        const n9 = v[8] !== null ? v[8] : 0;
+        const n10 = v[9] !== null ? v[9] : 0;
+
+        const rawNationwide = (avg6 / seventh) * n8;
+        const rawSeoul = (avg6 / seventh) * n9;
+        const rawPeak = (avg6 / seventh) * n10;
+
+        nationwide = formatByNetwork(rawNationwide, 'main');
+        seoul      = formatByNetwork(rawSeoul, 'main');
+        peak       = formatByNetwork(rawPeak, 'peak');
+      }
+
+      document.getElementById('nationwide').textContent = nationwide === '–' ? '–' : nationwide + '%';
+      document.getElementById('seoul').textContent      = seoul === '–' ? '–' : seoul + '%';
+      document.getElementById('peak').textContent       = peak === '–' ? '–' : peak + '%';
+    }
+
+    // ========== LOAD DATA ==========
+    function loadEpisode(index) {
+      const row = ledger[index];
+      if (!row) return;
+
+      document.getElementById('dramaName').value = row.drama || '';
+      document.getElementById('network').value = row.network || 'ENA';
+      document.getElementById('episode').value = row.ep;
+      document.getElementById('day').value = row.day || 'Sat';
+      updateFixedLabels();
+
+      for (let i = 0; i < 6; i++) {
+        document.getElementById(`label${i + 1}`).value = (row.labels && row.labels[i]) ? row.labels[i] : '';
+      }
+
+      for (let i = 0; i < 10; i++) {
+        const val = (row.values && row.values[i] !== null && row.values[i] !== undefined)
+          ? row.values[i]
+          : '';
+        document.getElementById(`val${i + 1}`).value = val;
+      }
+
+      calculate();
+
+      document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
+      const activeRow = document.querySelector(`tr[data-index="${index}"]`);
+      if (activeRow) activeRow.classList.add('active');
+
+      showToast(`Loaded ${row.drama} - Ep ${row.ep}`);
+    }
+
+    // ========== SAVE ==========
+    function saveEpisode() {
+      const drama = document.getElementById('dramaName').value.trim();
+      if (!drama) {
+        showToast('Please enter a Drama Name!');
+        document.getElementById('dramaName').focus();
+        return;
+      }
+
+      const network = document.getElementById('network').value;
+      const ep = parseInt(episodeSelect.value);
+      const day = document.getElementById('day').value;
+      const v = getValues();
+      const labels = getLabels();
+
+      const filledAll = v.filter(x => x !== null);
+      const avg = filledAll.length > 0 ? filledAll.reduce((a, b) => a + b, 0) / filledAll.length : 0;
+      const estimate = parseFloat(document.getElementById('nationwide').textContent) || 0;
+
+      const existIndex = ledger.findIndex(item => item.drama === drama && item.ep === ep);
+
+      const newRow = {
+        drama,
+        network,
+        ep,
+        day,
+        avg: avg,
+        estimate: estimate,
+        nielsen: null,
+        diff: null,
+        values: v,
+        labels: labels
+      };
+
+      if (existIndex >= 0) {
+        newRow.nielsen = ledger[existIndex].nielsen;
+        newRow.diff = ledger[existIndex].nielsen !== null
+          ? (newRow.estimate - ledger[existIndex].nielsen)
+          : null;
+        ledger[existIndex] = newRow;
+      } else {
+        ledger.push(newRow);
+      }
+
+      ledger.sort((a, b) => {
+        if (a.drama !== b.drama) return a.drama.localeCompare(b.drama);
+        return a.ep - b.ep;
+      });
+
+      localStorage.setItem('ratingLedger', JSON.stringify(ledger));
+      updateDramaFilter();
+      renderLedger();
+      showToast(`Saved ${drama} - Ep ${ep}`);
+    }
+
+    function nextEpisode() {
+      let current = parseInt(episodeSelect.value);
+      if (current < 16) {
+        episodeSelect.value = current + 1;
+        updateFixedLabels();
+      }
+      clearInputs(false);
+      showToast(`Moved to Ep ${episodeSelect.value}`);
+    }
+
+    function clearInputs(clearDrama = true) {
+      if (clearDrama) {
+        document.getElementById('dramaName').value = '';
+        document.getElementById('network').value = 'ENA';
+      }
+      for (let i = 1; i <= 6; i++) {
+        document.getElementById(`label${i}`).value = '';
+      }
+      for (let i = 1; i <= 10; i++) {
+        document.getElementById(`val${i}`).value = '';
+      }
+      calculate();
+      document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
+    }
+
+    function updateDramaFilter() {
+      const filter = document.getElementById('dramaFilter');
+      const currentValue = filter.value;
+      const dramas = [...new Set(ledger.map(item => item.drama))].sort();
+
+      filter.innerHTML = `<option value="all">All Dramas</option>`;
+      dramas.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        filter.appendChild(opt);
+      });
+
+      if ([...filter.options].some(o => o.value === currentValue)) {
+        filter.value = currentValue;
+      }
+    }
+
+    function renderLedger() {
+      const tbody = document.getElementById('ledgerBody');
+      const filterValue = document.getElementById('dramaFilter').value;
+      tbody.innerHTML = '';
+
+      let filtered = ledger;
+      if (filterValue !== 'all') {
+        filtered = ledger.filter(item => item.drama === filterValue);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach((row) => {
+        const realIndex = ledger.findIndex(item => item.drama === row.drama && item.ep === row.ep);
+
+        const tr = document.createElement('tr');
+        tr.className = 'clickable-row';
+        tr.dataset.index = realIndex;
+
+        const diffClass = row.diff > 0 ? 'diff-pos' : (row.diff < 0 ? 'diff-neg' : '');
+        
+        let diffText = '–';
+        if (row.diff !== null && row.diff !== undefined) {
+          diffText = (row.diff > 0 ? '+' : '') + parseFloat(row.diff.toFixed(6)).toString();
+        }
+
+        tr.innerHTML = `
+          <td class="drama-name">${row.drama}</td>
+          <td>${row.network || '–'}</td>
+          <td><strong>Ep ${row.ep}</strong> <span style="color:var(--muted);font-size:0.8rem">${row.day || ''}</span></td>
+          <td>${parseFloat(row.avg.toFixed(4))}</td>
+          <td>${parseFloat(row.estimate.toFixed(4))}</td>
+          <td>
+            <input type="number" class="nielsen-input" 
+                   value="${row.nielsen !== null ? row.nielsen : ''}" 
+                   step="any"
+                   min="0"
+                   onchange="updateNielsen(${realIndex}, this.value)"
+                   onclick="event.stopPropagation()"
+                   placeholder="–">
+          </td>
+          <td class="${diffClass}">${diffText}</td>
+        `;
+
+        tr.addEventListener('click', (e) => {
+          if (e.target.classList.contains('nielsen-input')) return;
+          loadEpisode(realIndex);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateNielsen(index, value) {
+      const nielsen = parseFloat(value);
+      if (isNaN(nielsen)) {
+        ledger[index].nielsen = null;
+        ledger[index].diff = null;
+      } else {
+        ledger[index].nielsen = nielsen;
+        ledger[index].diff = ledger[index].estimate - nielsen;
+      }
+      localStorage.setItem('ratingLedger', JSON.stringify(ledger));
+      renderLedger();
+    }
+
+    function saveTable() {
+      localStorage.setItem('ratingLedger', JSON.stringify(ledger));
+      showToast('Table saved successfully!');
+    }
+
+    function clearTable() {
+      if (confirm('Are you sure you want to clear the entire table?')) {
+        ledger = [];
+        localStorage.removeItem('ratingLedger');
+        updateDramaFilter();
+        renderLedger();
+        showToast('Table cleared');
+      }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    calculate();
+  </script>
+</body>
+</html>
