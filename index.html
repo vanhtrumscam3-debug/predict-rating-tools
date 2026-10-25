@@ -153,7 +153,6 @@
       width: 100%;
     }
 
-    /* ===== Image Upload + Drag & Drop ===== */
     .image-upload {
       display: flex;
       align-items: center;
@@ -553,7 +552,7 @@
         <div class="actions">
           <button class="btn btn-primary" onclick="saveEpisode()">Save Episode</button>
           <button class="btn btn-outline" onclick="nextEpisode()">Next Episode</button>
-          <button class="btn btn-outline" onclick="clearInputs()">Clear Inputs</button>
+          <button class="btn btn-outline" onclick="clearInputs(true)">Clear Inputs</button>
         </div>
       </div>
 
@@ -647,12 +646,10 @@
     // ===== DRAG & DROP =====
     const dropZone = document.getElementById('imagePreview');
 
-    // Click on preview also opens file dialog
     dropZone.addEventListener('click', () => {
       document.getElementById('dramaImage').click();
     });
 
-    // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
       dropZone.addEventListener(eventName, preventDefaults, false);
       document.body.addEventListener(eventName, preventDefaults, false);
@@ -663,20 +660,14 @@
       e.stopPropagation();
     }
 
-    // Highlight drop zone
     ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, () => {
-        dropZone.classList.add('drag-over');
-      }, false);
+      dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, () => {
-        dropZone.classList.remove('drag-over');
-      }, false);
+      dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
     });
 
-    // Handle dropped files
     dropZone.addEventListener('drop', (e) => {
       const files = e.dataTransfer.files;
       if (files.length > 0 && files[0].type.startsWith('image/')) {
@@ -693,9 +684,7 @@
     }
 
     function handleFiles(file) {
-      const fileNameEl = document.getElementById('fileName');
-      fileNameEl.textContent = file.name;
-
+      document.getElementById('fileName').textContent = file.name;
       const reader = new FileReader();
       reader.onload = function(e) {
         currentImageBase64 = e.target.result;
@@ -837,24 +826,41 @@
       showToast(`Saved ${drama} - Ep ${ep}`);
     }
 
+    // ===== NEXT EPISODE - Keep labels 1-6, clear only numbers =====
     function nextEpisode() {
       let current = parseInt(episodeSelect.value);
       if (current < 16) {
         episodeSelect.value = current + 1;
         updateFixedLabels();
       }
-      clearInputs(false);
+
+      // Only clear the number inputs (val1 → val10)
+      for (let i = 1; i <= 10; i++) {
+        document.getElementById(`val${i}`).value = '';
+      }
+
+      calculate();
+      document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
       showToast(`Moved to Ep ${episodeSelect.value}`);
     }
 
-    function clearInputs(clearDrama = true) {
-      if (clearDrama) {
+    // clearAll = true → clear everything (including labels + drama)
+    // clearAll = false → only clear numbers
+    function clearInputs(clearAll = true) {
+      if (clearAll) {
         document.getElementById('dramaName').value = '';
         document.getElementById('network').value = 'ENA';
         clearImage();
+        for (let i = 1; i <= 6; i++) {
+          document.getElementById(`label${i}`).value = '';
+        }
       }
-      for (let i = 1; i <= 6; i++) document.getElementById(`label${i}`).value = '';
-      for (let i = 1; i <= 10; i++) document.getElementById(`val${i}`).value = '';
+
+      // Always clear numbers
+      for (let i = 1; i <= 10; i++) {
+        document.getElementById(`val${i}`).value = '';
+      }
+
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
     }
