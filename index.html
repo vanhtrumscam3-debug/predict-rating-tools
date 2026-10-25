@@ -31,7 +31,6 @@
       position: relative;
     }
 
-    /* Overlay để chữ dễ đọc hơn */
     body::before {
       content: '';
       position: fixed;
@@ -182,8 +181,22 @@
       object-fit: cover;
     }
 
-    .image-upload input[type="file"] {
+    .custom-file-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #f0ebe3;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .custom-file-btn:hover {
+      background: #e8e0d0;
+      border-color: var(--gold);
     }
 
     .rt-grid {
@@ -487,11 +500,14 @@
           </div>
         </div>
 
+        <!-- Image Upload - English -->
         <div class="image-upload">
           <div class="image-preview" id="imagePreview">No image</div>
           <div>
-            <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;">Drama Poster</label><br>
-            <input type="file" id="dramaImage" accept="image/*" onchange="previewImage(event)">
+            <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:6px;">Drama Poster</label>
+            <label for="dramaImage" class="custom-file-btn">Choose File</label>
+            <span id="fileName" style="font-size:0.82rem;color:var(--muted);margin-left:10px;">No file chosen</span>
+            <input type="file" id="dramaImage" accept="image/*" onchange="previewImage(event)" style="display:none;">
           </div>
         </div>
 
@@ -613,9 +629,17 @@
 
     function previewImage(event) {
       const file = event.target.files[0];
-      if (!file) return;
+      const fileNameEl = document.getElementById('fileName');
+
+      if (!file) {
+        fileNameEl.textContent = 'No file chosen';
+        return;
+      }
+
+      fileNameEl.textContent = file.name;
+
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = function(e) {
         currentImageBase64 = e.target.result;
         document.getElementById('imagePreview').innerHTML = `<img src="${currentImageBase64}" alt="poster">`;
       };
@@ -625,6 +649,7 @@
     function clearImage() {
       currentImageBase64 = null;
       document.getElementById('dramaImage').value = '';
+      document.getElementById('fileName').textContent = 'No file chosen';
       document.getElementById('imagePreview').innerHTML = 'No image';
     }
 
@@ -691,7 +716,10 @@
       if (row.image) {
         currentImageBase64 = row.image;
         document.getElementById('imagePreview').innerHTML = `<img src="${row.image}" alt="poster">`;
-      } else clearImage();
+        document.getElementById('fileName').textContent = 'Image loaded';
+      } else {
+        clearImage();
+      }
 
       for (let i = 0; i < 6; i++) document.getElementById(`label${i+1}`).value = row.labels?.[i] || '';
       for (let i = 0; i < 10; i++) document.getElementById(`val${i+1}`).value = row.values?.[i] ?? '';
@@ -733,7 +761,9 @@
         newRow.diff = ledger[existIndex].nielsen != null ? newRow.estimate - ledger[existIndex].nielsen : null;
         if (!currentImageBase64 && ledger[existIndex].image) newRow.image = ledger[existIndex].image;
         ledger[existIndex] = newRow;
-      } else ledger.push(newRow);
+      } else {
+        ledger.push(newRow);
+      }
 
       ledger.sort((a, b) => a.drama !== b.drama ? a.drama.localeCompare(b.drama) : a.ep - b.ep);
       localStorage.setItem('ratingLedger', JSON.stringify(ledger));
