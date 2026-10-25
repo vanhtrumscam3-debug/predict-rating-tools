@@ -199,6 +199,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 0;
     }
 
     .rt-num {
@@ -218,6 +219,7 @@
     input.rt-text {
       flex: 1;
       min-width: 0;
+      width: 100%;
       padding: 8px 10px;
       font-size: 0.88rem;
     }
@@ -733,9 +735,17 @@
       const existIndex = ledger.findIndex(item => item.drama === drama && item.ep === ep);
 
       const newRow = {
-        drama, network, ep, day, avg, estimate,
-        nielsen: null, diff: null,
-        values: v, labels: labels, image: currentImageBase64
+        drama: drama,
+        network: network,
+        ep: ep,
+        day: day,
+        avg: avg,
+        estimate: estimate,
+        nielsen: null,
+        diff: null,
+        values: v,
+        labels: labels,
+        image: currentImageBase64
       };
 
       if (existIndex >= 0) {
@@ -747,7 +757,9 @@
         ledger.push(newRow);
       }
 
-      ledger.sort((a, b) => a.drama !== b.drama ? a.drama.localeCompare(b.drama) : a.ep - b.ep);
+      ledger.sort(function(a, b) {
+        return a.drama !== b.drama ? a.drama.localeCompare(b.drama) : a.ep - b.ep;
+      });
       localStorage.setItem('ratingLedger', JSON.stringify(ledger));
       updateDramaFilter();
       renderLedger();
@@ -760,6 +772,7 @@
         episodeSelect.value = current + 1;
         updateFixedLabels();
       }
+      // Keep labels 1-6, only clear numbers
       for (let i = 1; i <= 10; i++) {
         document.getElementById('val' + i).value = '';
       }
@@ -828,13 +841,15 @@
       const currentValue = filter.value;
       const dramas = [...new Set(ledger.map(item => item.drama))].sort();
       filter.innerHTML = '<option value="all">All Dramas</option>';
-      dramas.forEach(d => {
+      dramas.forEach(function(d) {
         const opt = document.createElement('option');
         opt.value = d;
         opt.textContent = d;
         filter.appendChild(opt);
       });
-      if ([...filter.options].some(o => o.value === currentValue)) filter.value = currentValue;
+      if ([...filter.options].some(function(o) { return o.value === currentValue; })) {
+        filter.value = currentValue;
+      }
     }
 
     function renderLedger() {
@@ -842,28 +857,30 @@
       const filterValue = document.getElementById('dramaFilter').value;
       tbody.innerHTML = '';
 
-      let filtered = filterValue === 'all' ? ledger : ledger.filter(item => item.drama === filterValue);
+      let filtered = filterValue === 'all' ? ledger : ledger.filter(function(item) { return item.drama === filterValue; });
 
       if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>';
         return;
       }
 
-      filtered.forEach(row => {
-        const realIndex = ledger.findIndex(item => item.drama === row.drama && item.ep === row.ep);
+      filtered.forEach(function(row) {
+        const realIndex = ledger.findIndex(function(item) { return item.drama === row.drama && item.ep === row.ep; });
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
         tr.dataset.index = realIndex;
 
         const diffClass = row.diff > 0 ? 'diff-pos' : (row.diff < 0 ? 'diff-neg' : '');
         let diffText = '–';
-        if (row.diff != null) diffText = (row.diff > 0 ? '+' : '') + parseFloat(row.diff.toFixed(6));
+        if (row.diff != null) {
+          diffText = (row.diff > 0 ? '+' : '') + parseFloat(row.diff.toFixed(6));
+        }
 
         const thumb = row.image
           ? '<img src="' + row.image + '" class="drama-thumb" alt="poster">'
           : '<div class="drama-thumb" style="display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#aaa;">N/A</div>';
 
-        tr.innerHTML = 
+        tr.innerHTML =
           '<td>' + thumb + '</td>' +
           '<td class="drama-name">' + row.drama + '</td>' +
           '<td>' + (row.network || '–') + '</td>' +
