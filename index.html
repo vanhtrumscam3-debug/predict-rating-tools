@@ -16,14 +16,15 @@
       --muted: #78716c;
       --success: #15803d;
       --danger: #b91c1c;
-      --shadow: 0 4px 24px rgba(0,0,0,0.05);
+      --shadow: 0 4px 24px rgba(0,0,0,0.06);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      background: var(--bg);
+      background: linear-gradient(135deg, #f8f4ec 0%, #f0e9db 50%, #e8e0d0 100%);
+      background-attachment: fixed;
       color: var(--text);
       line-height: 1.5;
       padding: 32px 16px 60px;
@@ -141,6 +142,39 @@
 
     .drama-field input {
       width: 100%;
+    }
+
+    /* Image upload */
+    .image-upload {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .image-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+      background: #f0ebe3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: var(--muted);
+      overflow: hidden;
+    }
+
+    .image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-upload input[type="file"] {
+      font-size: 0.85rem;
     }
 
     .rt-grid {
@@ -299,7 +333,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 560px;
+      min-width: 620px;
     }
 
     th {
@@ -314,10 +348,11 @@
     }
 
     td {
-      padding: 11px 12px;
+      padding: 10px 12px;
       border-top: 1px solid var(--border);
       font-size: 0.88rem;
       font-weight: 500;
+      vertical-align: middle;
     }
 
     tr.clickable-row {
@@ -347,6 +382,15 @@
     .drama-name {
       font-weight: 600;
       color: var(--text);
+    }
+
+    .drama-thumb {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: #f0ebe3;
     }
 
     .toast {
@@ -434,6 +478,15 @@
           </div>
         </div>
 
+        <!-- Image Upload -->
+        <div class="image-upload">
+          <div class="image-preview" id="imagePreview">No image</div>
+          <div>
+            <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;">Drama Poster</label><br>
+            <input type="file" id="dramaImage" accept="image/*" onchange="previewImage(event)">
+          </div>
+        </div>
+
         <div style="margin-top: 18px;">
           <div class="rt-grid">
             <div class="rt-header">Label / Note</div>
@@ -484,6 +537,7 @@
           <table>
             <thead>
               <tr>
+                <th>Poster</th>
                 <th>Drama</th>
                 <th>Network</th>
                 <th>Episode</th>
@@ -510,6 +564,8 @@
   <script>
     // Networks that use 3 decimal places for Nationwide & Seoul
     const HIGH_PRECISION_NETWORKS = ['ENA', 'tvN', 'jTBC', 'TV Chosun', 'Channel A'];
+
+    let currentImageBase64 = null;
 
     // ========== INIT ==========
     const episodeSelect = document.getElementById('episode');
@@ -556,6 +612,26 @@
     updateDramaFilter();
     renderLedger();
 
+    // ========== IMAGE ==========
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        currentImageBase64 = e.target.result;
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = `<img src="${currentImageBase64}" alt="poster">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearImage() {
+      currentImageBase64 = null;
+      document.getElementById('dramaImage').value = '';
+      document.getElementById('imagePreview').innerHTML = 'No image';
+    }
+
     // ========== FIXED LABELS ==========
     function updateFixedLabels() {
       const currentEp = parseInt(document.getElementById('episode').value) || 1;
@@ -569,21 +645,19 @@
 
     // ========== FORMAT NUMBER BY NETWORK ==========
     function formatByNetwork(value, type) {
-      // type: 'main' (Nationwide/Seoul) or 'peak'
       if (value === null || value === undefined || isNaN(value)) return '–';
 
       const network = document.getElementById('network').value;
       const isHighPrecision = HIGH_PRECISION_NETWORKS.includes(network);
 
       if (type === 'peak') {
-        return value.toFixed(1);           // Peak luôn 1 chữ số
+        return value.toFixed(1);
       }
 
-      // Nationwide & Seoul
       if (isHighPrecision) {
-        return parseFloat(value.toFixed(3)).toString(); // tối đa 3
+        return parseFloat(value.toFixed(3)).toString();
       } else {
-        return value.toFixed(1);           // 1 chữ số
+        return value.toFixed(1);
       }
     }
 
@@ -645,6 +719,14 @@
       document.getElementById('day').value = row.day || 'Sat';
       updateFixedLabels();
 
+      // Load image
+      if (row.image) {
+        currentImageBase64 = row.image;
+        document.getElementById('imagePreview').innerHTML = `<img src="${row.image}" alt="poster">`;
+      } else {
+        clearImage();
+      }
+
       for (let i = 0; i < 6; i++) {
         document.getElementById(`label${i + 1}`).value = (row.labels && row.labels[i]) ? row.labels[i] : '';
       }
@@ -696,7 +778,8 @@
         nielsen: null,
         diff: null,
         values: v,
-        labels: labels
+        labels: labels,
+        image: currentImageBase64
       };
 
       if (existIndex >= 0) {
@@ -704,6 +787,10 @@
         newRow.diff = ledger[existIndex].nielsen !== null
           ? (newRow.estimate - ledger[existIndex].nielsen)
           : null;
+        // Keep old image if no new one selected
+        if (!currentImageBase64 && ledger[existIndex].image) {
+          newRow.image = ledger[existIndex].image;
+        }
         ledger[existIndex] = newRow;
       } else {
         ledger.push(newRow);
@@ -734,6 +821,7 @@
       if (clearDrama) {
         document.getElementById('dramaName').value = '';
         document.getElementById('network').value = 'ENA';
+        clearImage();
       }
       for (let i = 1; i <= 6; i++) {
         document.getElementById(`label${i}`).value = '';
@@ -774,7 +862,7 @@
       }
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>`;
         return;
       }
 
@@ -792,7 +880,12 @@
           diffText = (row.diff > 0 ? '+' : '') + parseFloat(row.diff.toFixed(6)).toString();
         }
 
+        const thumb = row.image 
+          ? `<img src="${row.image}" class="drama-thumb" alt="poster">`
+          : `<div class="drama-thumb" style="display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#aaa;">N/A</div>`;
+
         tr.innerHTML = `
+          <td>${thumb}</td>
           <td class="drama-name">${row.drama}</td>
           <td>${row.network || '–'}</td>
           <td><strong>Ep ${row.ep}</strong> <span style="color:var(--muted);font-size:0.8rem">${row.day || ''}</span></td>
