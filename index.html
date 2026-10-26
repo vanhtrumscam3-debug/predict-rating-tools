@@ -37,7 +37,7 @@
       z-index: -1;
     }
 
-    .container { max-width: 1400px; margin: 0 auto; }
+    .container { max-width: 1500px; margin: 0 auto; }
 
     header { text-align: center; margin-bottom: 32px; }
 
@@ -53,7 +53,7 @@
 
     .main-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1.15fr;
       gap: 24px;
       align-items: start;
     }
@@ -222,7 +222,6 @@
       transition: width 0.2s ease;
     }
 
-    /* Ô trống của 6 dòng đầu */
     input.rt-text.editable-label {
       width: 70px;
       min-width: 60px;
@@ -330,23 +329,23 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 620px;
+      min-width: 900px;
     }
 
     th {
       background: #f5f1e9;
       text-align: left;
-      padding: 12px;
-      font-size: 0.68rem;
+      padding: 11px 10px;
+      font-size: 0.66rem;
       font-weight: 700;
       color: var(--muted);
       text-transform: uppercase;
     }
 
     td {
-      padding: 10px 12px;
+      padding: 10px;
       border-top: 1px solid var(--border);
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       vertical-align: middle;
     }
 
@@ -358,9 +357,9 @@
     .diff-neg { color: var(--danger); font-weight: 700; }
 
     input.nielsen-input {
-      width: 80px;
+      width: 75px;
       padding: 6px 8px;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       text-align: center;
       font-weight: 600;
     }
@@ -368,8 +367,8 @@
     .drama-name { font-weight: 600; }
 
     .drama-thumb {
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       border-radius: 8px;
       object-fit: cover;
       border: 1px solid var(--border);
@@ -517,9 +516,11 @@
                 <th>Network</th>
                 <th>Episode</th>
                 <th>Rating Avg</th>
-                <th>Estimate</th>
+                <th>Est. (NW)</th>
+                <th>Est. (Seoul)</th>
                 <th>Nielsen</th>
-                <th>Diff</th>
+                <th>Diff (NW)</th>
+                <th>Diff (Seoul)</th>
               </tr>
             </thead>
             <tbody id="ledgerBody"></tbody>
@@ -570,9 +571,7 @@
       labelInput.maxLength = 40;
 
       if (i <= 6) {
-        // Ô trống có thể gõ + chữ KST cố định
         labelInput.classList.add('editable-label');
-        labelInput.placeholder = '';
 
         const kstSpan = document.createElement('span');
         kstSpan.className = 'kst-text';
@@ -582,7 +581,6 @@
         labelDiv.appendChild(labelInput);
         labelDiv.appendChild(kstSpan);
       } else {
-        // Ô 7-10: fixed label
         labelInput.classList.add('fixed-label');
         labelInput.readOnly = true;
 
@@ -590,7 +588,6 @@
         labelDiv.appendChild(labelInput);
       }
 
-      // Value side
       const valueInput = document.createElement('input');
       valueInput.type = 'number';
       valueInput.className = 'rt-value';
@@ -758,7 +755,10 @@
       const labels = getLabels();
       const filledAll = v.filter(x => x !== null);
       const avg = filledAll.length ? filledAll.reduce((a, b) => a + b, 0) / filledAll.length : 0;
-      const estimate = parseFloat(document.getElementById('nationwide').textContent) || 0;
+
+      // Get both estimates
+      const estNW = parseFloat(document.getElementById('nationwide').textContent) || 0;
+      const estSeoul = parseFloat(document.getElementById('seoul').textContent) || 0;
 
       const existIndex = ledger.findIndex(item => item.drama === drama && item.ep === ep);
 
@@ -768,18 +768,26 @@
         ep: ep,
         day: day,
         avg: avg,
-        estimate: estimate,
+        estimateNW: estNW,
+        estimateSeoul: estSeoul,
         nielsen: null,
-        diff: null,
+        diffNW: null,
+        diffSeoul: null,
         values: v,
         labels: labels,
         image: currentImageBase64
       };
 
       if (existIndex >= 0) {
+        // Keep existing Nielsen if available
         newRow.nielsen = ledger[existIndex].nielsen;
-        newRow.diff = ledger[existIndex].nielsen != null ? newRow.estimate - ledger[existIndex].nielsen : null;
-        if (!currentImageBase64 && ledger[existIndex].image) newRow.image = ledger[existIndex].image;
+        if (newRow.nielsen != null) {
+          newRow.diffNW = newRow.estimateNW - newRow.nielsen;
+          newRow.diffSeoul = newRow.estimateSeoul - newRow.nielsen;
+        }
+        if (!currentImageBase64 && ledger[existIndex].image) {
+          newRow.image = ledger[existIndex].image;
+        }
         ledger[existIndex] = newRow;
       } else {
         ledger.push(newRow);
@@ -800,7 +808,6 @@
         episodeSelect.value = current + 1;
         updateFixedLabels();
       }
-      // Keep the text in label 1-6, only clear numbers
       for (let i = 1; i <= 10; i++) {
         document.getElementById('val' + i).value = '';
       }
@@ -888,7 +895,7 @@
       let filtered = filterValue === 'all' ? ledger : ledger.filter(function(item) { return item.drama === filterValue; });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>';
         return;
       }
 
@@ -898,25 +905,40 @@
         tr.className = 'clickable-row';
         tr.dataset.index = realIndex;
 
-        const diffClass = row.diff > 0 ? 'diff-pos' : (row.diff < 0 ? 'diff-neg' : '');
-        let diffText = '–';
-        if (row.diff != null) {
-          diffText = (row.diff > 0 ? '+' : '') + parseFloat(row.diff.toFixed(6));
+        // Diff Nationwide
+        let diffNWClass = '';
+        let diffNWText = '–';
+        if (row.diffNW != null) {
+          diffNWClass = row.diffNW > 0 ? 'diff-pos' : (row.diffNW < 0 ? 'diff-neg' : '');
+          diffNWText = (row.diffNW > 0 ? '+' : '') + parseFloat(row.diffNW.toFixed(4));
+        }
+
+        // Diff Seoul
+        let diffSeoulClass = '';
+        let diffSeoulText = '–';
+        if (row.diffSeoul != null) {
+          diffSeoulClass = row.diffSeoul > 0 ? 'diff-pos' : (row.diffSeoul < 0 ? 'diff-neg' : '');
+          diffSeoulText = (row.diffSeoul > 0 ? '+' : '') + parseFloat(row.diffSeoul.toFixed(4));
         }
 
         const thumb = row.image
           ? '<img src="' + row.image + '" class="drama-thumb" alt="poster">'
           : '<div class="drama-thumb" style="display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#aaa;">N/A</div>';
 
+        const estNW = row.estimateNW != null ? parseFloat(row.estimateNW.toFixed(4)) : (row.estimate != null ? parseFloat(row.estimate.toFixed(4)) : '–');
+        const estSeoul = row.estimateSeoul != null ? parseFloat(row.estimateSeoul.toFixed(4)) : '–';
+
         tr.innerHTML =
           '<td>' + thumb + '</td>' +
           '<td class="drama-name">' + row.drama + '</td>' +
           '<td>' + (row.network || '–') + '</td>' +
           '<td><strong>Ep ' + row.ep + '</strong> <span style="color:var(--muted);font-size:0.8rem">' + (row.day || '') + '</span></td>' +
-          '<td>' + parseFloat(row.avg.toFixed(4)) + '</td>' +
-          '<td>' + parseFloat(row.estimate.toFixed(4)) + '</td>' +
+          '<td>' + parseFloat((row.avg || 0).toFixed(4)) + '</td>' +
+          '<td>' + estNW + '</td>' +
+          '<td>' + estSeoul + '</td>' +
           '<td><input type="number" class="nielsen-input" value="' + (row.nielsen != null ? row.nielsen : '') + '" step="any" min="0" onchange="updateNielsen(' + realIndex + ', this.value)" onclick="event.stopPropagation()" placeholder="–"></td>' +
-          '<td class="' + diffClass + '">' + diffText + '</td>';
+          '<td class="' + diffNWClass + '">' + diffNWText + '</td>' +
+          '<td class="' + diffSeoulClass + '">' + diffSeoulText + '</td>';
 
         tr.addEventListener('click', function(e) {
           if (e.target.classList.contains('nielsen-input')) return;
@@ -931,10 +953,15 @@
       const nielsen = parseFloat(value);
       if (isNaN(nielsen)) {
         ledger[index].nielsen = null;
-        ledger[index].diff = null;
+        ledger[index].diffNW = null;
+        ledger[index].diffSeoul = null;
       } else {
         ledger[index].nielsen = nielsen;
-        ledger[index].diff = ledger[index].estimate - nielsen;
+        // Calculate both differences
+        const estNW = ledger[index].estimateNW != null ? ledger[index].estimateNW : (ledger[index].estimate || 0);
+        const estSeoul = ledger[index].estimateSeoul != null ? ledger[index].estimateSeoul : 0;
+        ledger[index].diffNW = estNW - nielsen;
+        ledger[index].diffSeoul = estSeoul - nielsen;
       }
       localStorage.setItem('ratingLedger', JSON.stringify(ledger));
       renderLedger();
