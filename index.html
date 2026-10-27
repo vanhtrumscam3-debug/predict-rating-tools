@@ -553,6 +553,10 @@
     let lastRawNW = null;
     let lastRawSeoul = null;
 
+    // Fixed random add (chỉ random 1 lần)
+    let fixedAddNW = null;
+    let fixedAddSeoul = null;
+
     // Create episode options
     const episodeSelect = document.getElementById('episode');
     for (let i = 1; i <= 16; i++) {
@@ -682,42 +686,50 @@
       return value.toFixed(getDecimals());
     }
 
-    // Create display range: x.xxx - x.xxx
-    function makeRange(value) {
+    // Tạo khoảng cố định (chỉ random 1 lần)
+    function makeRange(value, type) {
       if (value == null || isNaN(value)) return '–';
 
       const decimals = getDecimals();
 
-      let randomAdd;
-      if (value <= 5) {
-        randomAdd = 0.3 + Math.random() * 0.4;   // 0.3 ~ 0.7
-      } else {
-        randomAdd = 0.5 + Math.random() * 0.5;   // 0.5 ~ 1.0
+      if (type === 'NW') {
+        if (fixedAddNW === null) {
+          fixedAddNW = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
+          fixedAddNW = parseFloat(fixedAddNW.toFixed(decimals));
+        }
+        const lower = parseFloat(value.toFixed(decimals));
+        const upper = parseFloat((value + fixedAddNW).toFixed(decimals));
+        return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
       }
 
-      randomAdd = parseFloat(randomAdd.toFixed(decimals));
+      if (type === 'Seoul') {
+        if (fixedAddSeoul === null) {
+          fixedAddSeoul = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
+          fixedAddSeoul = parseFloat(fixedAddSeoul.toFixed(decimals));
+        }
+        const lower = parseFloat(value.toFixed(decimals));
+        const upper = parseFloat((value + fixedAddSeoul).toFixed(decimals));
+        return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
+      }
 
-      const lower = parseFloat(value.toFixed(decimals));
-      const upper = parseFloat((value + randomAdd).toFixed(decimals));
-
-      return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
+      return '–';
     }
 
-    // Get a random number inside the predicted range (for saving to table)
-    function getRandomInRange(value) {
+    // Lấy 1 số ngẫu nhiên trong khoảng (dùng khi Save)
+    function getRandomInRange(value, type) {
       if (value == null || isNaN(value)) return null;
 
       const decimals = getDecimals();
+      let add = 0;
 
-      let randomAdd;
-      if (value <= 5) {
-        randomAdd = 0.3 + Math.random() * 0.4;
+      if (type === 'NW') {
+        add = fixedAddNW !== null ? fixedAddNW : (value <= 5 ? 0.3 + Math.random() * 0.4 : 0.5 + Math.random() * 0.5);
       } else {
-        randomAdd = 0.5 + Math.random() * 0.5;
+        add = fixedAddSeoul !== null ? fixedAddSeoul : (value <= 5 ? 0.3 + Math.random() * 0.4 : 0.5 + Math.random() * 0.5);
       }
 
       const lower = value;
-      const upper = value + randomAdd;
+      const upper = value + add;
       const randomValue = lower + Math.random() * (upper - lower);
 
       return parseFloat(randomValue.toFixed(decimals));
@@ -758,8 +770,8 @@
         lastRawNW = rawNW;
         lastRawSeoul = rawSeoul;
 
-        nationwide = makeRange(rawNW);
-        seoul = makeRange(rawSeoul);
+        nationwide = makeRange(rawNW, 'NW');
+        seoul = makeRange(rawSeoul, 'Seoul');
         peak = formatByNetwork(rawPeak, 'peak');
       }
 
@@ -795,6 +807,10 @@
         document.getElementById('val' + (i + 1)).value = (row.values && row.values[i] != null) ? row.values[i] : '';
       }
 
+      // Reset fixed range khi load tập khác
+      fixedAddNW = null;
+      fixedAddSeoul = null;
+
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
       const active = document.querySelector('tr[data-index="' + index + '"]');
@@ -818,11 +834,20 @@
       const filledAll = v.filter(x => x !== null);
       const avg = filledAll.length ? filledAll.reduce((a, b) => a + b, 0) / filledAll.length : 0;
 
-      // Lấy ngẫu nhiên 1 số trong khoảng dự đoán
-      const estNW = getRandomInRange(lastRawNW);
-      const estSeoul = getRandomInRange(lastRawSeoul);
+      let estNW = null;
+      let estSeoul = null;
 
       const existIndex = ledger.findIndex(item => item.drama === drama && item.ep === ep);
+
+      if (existIndex >= 0) {
+        // Đã có → giữ nguyên số cũ
+        estNW = ledger[existIndex].estimateNW ?? getRandomInRange(lastRawNW, 'NW');
+        estSeoul = ledger[existIndex].estimateSeoul ?? getRandomInRange(lastRawSeoul, 'Seoul');
+      } else {
+        // Tập mới → random 1 lần
+        estNW = getRandomInRange(lastRawNW, 'NW');
+        estSeoul = getRandomInRange(lastRawSeoul, 'Seoul');
+      }
 
       const newRow = {
         drama: drama,
@@ -878,6 +903,11 @@
       for (let i = 1; i <= 10; i++) {
         document.getElementById('val' + i).value = '';
       }
+
+      // Reset khoảng dự đoán
+      fixedAddNW = null;
+      fixedAddSeoul = null;
+
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
       showToast('Moved to Ep ' + episodeSelect.value);
@@ -895,6 +925,11 @@
       for (let i = 1; i <= 10; i++) {
         document.getElementById('val' + i).value = '';
       }
+
+      // Reset khoảng dự đoán
+      fixedAddNW = null;
+      fixedAddSeoul = null;
+
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
     }
@@ -993,8 +1028,14 @@
         const estNW = row.estimateNW != null ? row.estimateNW : '–';
         const estSeoul = row.estimateSeoul != null ? row.estimateSeoul : '–';
 
-        const nielsenNW = row.nielsenNW != null ? row.nielsenNW : (row.nielsen != null ? row.nielsen : '');
-        const nielsenSeoul = row.nielsenSeoul != null ? row.nielsenSeoul : '';
+        function formatEstimate(value, network) {
+  if (value == null || isNaN(value)) return '–';
+  const isHigh = HIGH_PRECISION_NETWORKS.includes(network);
+  return isHigh ? parseFloat(value.toFixed(3)) : parseFloat(value.toFixed(1));
+}
+
+const estNW = formatEstimate(row.estimateNW, row.network);
+const estSeoul = formatEstimate(row.estimateSeoul, row.network);
 
         tr.innerHTML =
           '<td>' + thumb + '</td>' +
