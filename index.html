@@ -549,7 +549,7 @@
     let currentImageBase64 = null;
     let ledger = JSON.parse(localStorage.getItem('ratingLedger') || '[]');
 
-    // Store the raw calculated values for saving
+    // Raw calculated values
     let lastRawNW = null;
     let lastRawSeoul = null;
 
@@ -671,39 +671,58 @@
       document.getElementById('label10').value = 'Peak rating';
     }
 
-    function formatByNetwork(value, type) {
-      if (value == null || isNaN(value)) return '–';
+    function getDecimals() {
       const network = document.getElementById('network').value;
-      const isHigh = HIGH_PRECISION_NETWORKS.includes(network);
-      if (type === 'peak') return value.toFixed(1);
-      return isHigh ? parseFloat(value.toFixed(3)).toString() : value.toFixed(1);
+      return HIGH_PRECISION_NETWORKS.includes(network) ? 3 : 1;
     }
 
-    // Create range: x.xxx - x.xxx
+    function formatByNetwork(value, type) {
+      if (value == null || isNaN(value)) return '–';
+      if (type === 'peak') return value.toFixed(1);
+      return value.toFixed(getDecimals());
+    }
+
+    // Create display range: x.xxx - x.xxx
     function makeRange(value) {
-  if (value == null || isNaN(value)) return '–';
+      if (value == null || isNaN(value)) return '–';
 
-  const network = document.getElementById('network').value;
-  const isHigh = HIGH_PRECISION_NETWORKS.includes(network);
-  const decimals = isHigh ? 3 : 1;
+      const decimals = getDecimals();
 
-  let randomAdd;
-  if (value <= 5) {
-    // 0.3 ~ 0.7
-    randomAdd = 0.3 + Math.random() * 0.4;
-  } else {
-    // 0.5 ~ 1.0
-    randomAdd = 0.5 + Math.random() * 0.5;
-  }
+      let randomAdd;
+      if (value <= 5) {
+        randomAdd = 0.3 + Math.random() * 0.4;   // 0.3 ~ 0.7
+      } else {
+        randomAdd = 0.5 + Math.random() * 0.5;   // 0.5 ~ 1.0
+      }
 
-  // Làm tròn theo số chữ số thập phân của mạng
-  randomAdd = parseFloat(randomAdd.toFixed(decimals));
+      randomAdd = parseFloat(randomAdd.toFixed(decimals));
 
-  const lower = parseFloat(value.toFixed(decimals));
-  const upper = parseFloat((value + randomAdd).toFixed(decimals));
+      const lower = parseFloat(value.toFixed(decimals));
+      const upper = parseFloat((value + randomAdd).toFixed(decimals));
 
-  return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
-}
+      return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
+    }
+
+    // Get a random number inside the predicted range (for saving to table)
+    function getRandomInRange(value) {
+      if (value == null || isNaN(value)) return null;
+
+      const decimals = getDecimals();
+
+      let randomAdd;
+      if (value <= 5) {
+        randomAdd = 0.3 + Math.random() * 0.4;
+      } else {
+        randomAdd = 0.5 + Math.random() * 0.5;
+      }
+
+      const lower = value;
+      const upper = value + randomAdd;
+      const randomValue = lower + Math.random() * (upper - lower);
+
+      return parseFloat(randomValue.toFixed(decimals));
+    }
+
     function getValues() {
       const vals = [];
       for (let i = 1; i <= 10; i++) {
@@ -799,9 +818,9 @@
       const filledAll = v.filter(x => x !== null);
       const avg = filledAll.length ? filledAll.reduce((a, b) => a + b, 0) / filledAll.length : 0;
 
-      // Use the raw calculated values (not the range text)
-      const estNW = lastRawNW;
-      const estSeoul = lastRawSeoul;
+      // Lấy ngẫu nhiên 1 số trong khoảng dự đoán
+      const estNW = getRandomInRange(lastRawNW);
+      const estSeoul = getRandomInRange(lastRawSeoul);
 
       const existIndex = ledger.findIndex(item => item.drama === drama && item.ep === ep);
 
@@ -971,8 +990,8 @@
           ? '<img src="' + row.image + '" class="drama-thumb" alt="poster">'
           : '<div class="drama-thumb" style="display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#aaa;">N/A</div>';
 
-        const estNW = row.estimateNW != null ? parseFloat(row.estimateNW.toFixed(3)) : '–';
-        const estSeoul = row.estimateSeoul != null ? parseFloat(row.estimateSeoul.toFixed(3)) : '–';
+        const estNW = row.estimateNW != null ? row.estimateNW : '–';
+        const estSeoul = row.estimateSeoul != null ? row.estimateSeoul : '–';
 
         const nielsenNW = row.nielsenNW != null ? row.nielsenNW : (row.nielsen != null ? row.nielsen : '');
         const nielsenSeoul = row.nielsenSeoul != null ? row.nielsenSeoul : '';
