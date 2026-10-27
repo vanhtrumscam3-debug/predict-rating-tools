@@ -424,7 +424,7 @@
           </div>
           <div class="field">
             <label>Network</label>
-            <select id="network" onchange="calculate()">
+            <select id="network" onchange="onNetworkChange()">
               <option value="ENA">ENA</option>
               <option value="tvN">tvN</option>
               <option value="SBS">SBS</option>
@@ -549,11 +549,8 @@
     let currentImageBase64 = null;
     let ledger = JSON.parse(localStorage.getItem('ratingLedger') || '[]');
 
-    // Raw calculated values
     let lastRawNW = null;
     let lastRawSeoul = null;
-
-    // Fixed random add (chỉ random 1 lần)
     let fixedAddNW = null;
     let fixedAddSeoul = null;
 
@@ -584,18 +581,15 @@
 
       if (i <= 6) {
         labelInput.classList.add('editable-label');
-
         const kstSpan = document.createElement('span');
         kstSpan.className = 'kst-text';
         kstSpan.textContent = 'KST';
-
         labelDiv.appendChild(numDiv);
         labelDiv.appendChild(labelInput);
         labelDiv.appendChild(kstSpan);
       } else {
         labelInput.classList.add('fixed-label');
         labelInput.readOnly = true;
-
         labelDiv.appendChild(numDiv);
         labelDiv.appendChild(labelInput);
       }
@@ -616,7 +610,7 @@
     updateDramaFilter();
     renderLedger();
 
-    // ===== Image handling =====
+    // ===== Image =====
     const dropZone = document.getElementById('imagePreview');
     dropZone.addEventListener('click', () => document.getElementById('dramaImage').click());
 
@@ -680,13 +674,19 @@
       return HIGH_PRECISION_NETWORKS.includes(network) ? 3 : 1;
     }
 
+    function onNetworkChange() {
+      // Reset fixed range when network changes (decimals change)
+      fixedAddNW = null;
+      fixedAddSeoul = null;
+      calculate();
+    }
+
     function formatByNetwork(value, type) {
       if (value == null || isNaN(value)) return '–';
       if (type === 'peak') return value.toFixed(1);
       return value.toFixed(getDecimals());
     }
 
-    // Tạo khoảng cố định (chỉ random 1 lần)
     function makeRange(value, type) {
       if (value == null || isNaN(value)) return '–';
 
@@ -715,7 +715,6 @@
       return '–';
     }
 
-    // Lấy 1 số ngẫu nhiên trong khoảng (dùng khi Save)
     function getRandomInRange(value, type) {
       if (value == null || isNaN(value)) return null;
 
@@ -733,6 +732,12 @@
       const randomValue = lower + Math.random() * (upper - lower);
 
       return parseFloat(randomValue.toFixed(decimals));
+    }
+
+    function formatEstimate(value, network) {
+      if (value == null || isNaN(value)) return '–';
+      const isHigh = HIGH_PRECISION_NETWORKS.includes(network);
+      return isHigh ? parseFloat(Number(value).toFixed(3)) : parseFloat(Number(value).toFixed(1));
     }
 
     function getValues() {
@@ -807,7 +812,6 @@
         document.getElementById('val' + (i + 1)).value = (row.values && row.values[i] != null) ? row.values[i] : '';
       }
 
-      // Reset fixed range khi load tập khác
       fixedAddNW = null;
       fixedAddSeoul = null;
 
@@ -840,11 +844,9 @@
       const existIndex = ledger.findIndex(item => item.drama === drama && item.ep === ep);
 
       if (existIndex >= 0) {
-        // Đã có → giữ nguyên số cũ
-        estNW = ledger[existIndex].estimateNW ?? getRandomInRange(lastRawNW, 'NW');
-        estSeoul = ledger[existIndex].estimateSeoul ?? getRandomInRange(lastRawSeoul, 'Seoul');
+        estNW = ledger[existIndex].estimateNW != null ? ledger[existIndex].estimateNW : getRandomInRange(lastRawNW, 'NW');
+        estSeoul = ledger[existIndex].estimateSeoul != null ? ledger[existIndex].estimateSeoul : getRandomInRange(lastRawSeoul, 'Seoul');
       } else {
-        // Tập mới → random 1 lần
         estNW = getRandomInRange(lastRawNW, 'NW');
         estSeoul = getRandomInRange(lastRawSeoul, 'Seoul');
       }
@@ -904,7 +906,6 @@
         document.getElementById('val' + i).value = '';
       }
 
-      // Reset khoảng dự đoán
       fixedAddNW = null;
       fixedAddSeoul = null;
 
@@ -926,7 +927,6 @@
         document.getElementById('val' + i).value = '';
       }
 
-      // Reset khoảng dự đoán
       fixedAddNW = null;
       fixedAddSeoul = null;
 
@@ -1011,31 +1011,25 @@
         let diffNWText = '–';
         if (row.diffNW != null) {
           diffNWClass = row.diffNW > 0 ? 'diff-pos' : (row.diffNW < 0 ? 'diff-neg' : '');
-          diffNWText = (row.diffNW > 0 ? '+' : '') + parseFloat(row.diffNW.toFixed(4));
+          diffNWText = (row.diffNW > 0 ? '+' : '') + parseFloat(Number(row.diffNW).toFixed(4));
         }
 
         let diffSeoulClass = '';
         let diffSeoulText = '–';
         if (row.diffSeoul != null) {
           diffSeoulClass = row.diffSeoul > 0 ? 'diff-pos' : (row.diffSeoul < 0 ? 'diff-neg' : '');
-          diffSeoulText = (row.diffSeoul > 0 ? '+' : '') + parseFloat(row.diffSeoul.toFixed(4));
+          diffSeoulText = (row.diffSeoul > 0 ? '+' : '') + parseFloat(Number(row.diffSeoul).toFixed(4));
         }
 
         const thumb = row.image
           ? '<img src="' + row.image + '" class="drama-thumb" alt="poster">'
           : '<div class="drama-thumb" style="display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#aaa;">N/A</div>';
 
-        const estNW = row.estimateNW != null ? row.estimateNW : '–';
-        const estSeoul = row.estimateSeoul != null ? row.estimateSeoul : '–';
+        const estNW = formatEstimate(row.estimateNW, row.network);
+        const estSeoul = formatEstimate(row.estimateSeoul, row.network);
 
-        function formatEstimate(value, network) {
-  if (value == null || isNaN(value)) return '–';
-  const isHigh = HIGH_PRECISION_NETWORKS.includes(network);
-  return isHigh ? parseFloat(value.toFixed(3)) : parseFloat(value.toFixed(1));
-}
-
-const estNW = formatEstimate(row.estimateNW, row.network);
-const estSeoul = formatEstimate(row.estimateSeoul, row.network);
+        const nielsenNW = row.nielsenNW != null ? row.nielsenNW : (row.nielsen != null ? row.nielsen : '');
+        const nielsenSeoul = row.nielsenSeoul != null ? row.nielsenSeoul : '';
 
         tr.innerHTML =
           '<td>' + thumb + '</td>' +
