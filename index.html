@@ -688,51 +688,71 @@
     }
 
     function makeRange(value, type) {
-      if (value == null || isNaN(value)) return '–';
+  if (value == null || isNaN(value)) return '–';
 
-      const decimals = getDecimals();
+  const decimals = getDecimals();
 
-      if (type === 'NW') {
-        if (fixedAddNW === null) {
-          fixedAddNW = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
-          fixedAddNW = parseFloat(fixedAddNW.toFixed(decimals));
-        }
-        const lower = parseFloat(value.toFixed(decimals));
-        const upper = parseFloat((value + fixedAddNW).toFixed(decimals));
-        return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
-      }
+  if (type === 'NW') {
+    if (fixedAddNW === null) {
+      // Random phần cộng
+      const add = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
+      // Random phần trừ
+      const sub = value <= 5 ? (Math.random() * 0.3) : (Math.random() * 0.5);
 
-      if (type === 'Seoul') {
-        if (fixedAddSeoul === null) {
-          fixedAddSeoul = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
-          fixedAddSeoul = parseFloat(fixedAddSeoul.toFixed(decimals));
-        }
-        const lower = parseFloat(value.toFixed(decimals));
-        const upper = parseFloat((value + fixedAddSeoul).toFixed(decimals));
-        return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
-      }
-
-      return '–';
+      fixedAddNW = {
+        add: parseFloat(add.toFixed(decimals)),
+        sub: parseFloat(sub.toFixed(decimals))
+      };
     }
+
+    const lower = parseFloat((value - fixedAddNW.sub).toFixed(decimals));
+    const upper = parseFloat((value + fixedAddNW.add).toFixed(decimals));
+    return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
+  }
+
+  if (type === 'Seoul') {
+    if (fixedAddSeoul === null) {
+      const add = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
+      const sub = value <= 5 ? (Math.random() * 0.3) : (Math.random() * 0.5);
+
+      fixedAddSeoul = {
+        add: parseFloat(add.toFixed(decimals)),
+        sub: parseFloat(sub.toFixed(decimals))
+      };
+    }
+
+    const lower = parseFloat((value - fixedAddSeoul.sub).toFixed(decimals));
+    const upper = parseFloat((value + fixedAddSeoul.add).toFixed(decimals));
+    return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
+  }
+
+  return '–';
+}
 
     function getRandomInRange(value, type) {
-      if (value == null || isNaN(value)) return null;
+  if (value == null || isNaN(value)) return null;
 
-      const decimals = getDecimals();
-      let add = 0;
+  const decimals = getDecimals();
+  let add = 0, sub = 0;
 
-      if (type === 'NW') {
-        add = fixedAddNW !== null ? fixedAddNW : (value <= 5 ? 0.3 + Math.random() * 0.4 : 0.5 + Math.random() * 0.5);
-      } else {
-        add = fixedAddSeoul !== null ? fixedAddSeoul : (value <= 5 ? 0.3 + Math.random() * 0.4 : 0.5 + Math.random() * 0.5);
-      }
+  if (type === 'NW' && fixedAddNW) {
+    add = fixedAddNW.add;
+    sub = fixedAddNW.sub;
+  } else if (type === 'Seoul' && fixedAddSeoul) {
+    add = fixedAddSeoul.add;
+    sub = fixedAddSeoul.sub;
+  } else {
+    // fallback nếu chưa có
+    add = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
+    sub = value <= 5 ? (Math.random() * 0.3) : (Math.random() * 0.5);
+  }
 
-      const lower = value;
-      const upper = value + add;
-      const randomValue = lower + Math.random() * (upper - lower);
+  const lower = value - sub;
+  const upper = value + add;
+  const randomValue = lower + Math.random() * (upper - lower);
 
-      return parseFloat(randomValue.toFixed(decimals));
-    }
+  return parseFloat(randomValue.toFixed(decimals));
+}
 
     function formatEstimate(value, network) {
       if (value == null || isNaN(value)) return '–';
