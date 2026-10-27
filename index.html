@@ -835,8 +835,6 @@
         document.getElementById('val' + (i + 1)).value = (row.values && row.values[i] != null) ? row.values[i] : '';
       }
 
-      fixedAddNW = null;
-      fixedAddSeoul = null;
 
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
