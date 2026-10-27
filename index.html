@@ -681,25 +681,29 @@
 
     // Create range: x.xxx - x.xxx
     function makeRange(value) {
-      if (value == null || isNaN(value)) return '–';
+  if (value == null || isNaN(value)) return '–';
 
-      let randomAdd;
-      if (value <= 5) {
-        // 0.300 ~ 0.700
-        randomAdd = 0.3 + Math.random() * 0.4;
-      } else {
-        // 0.500 ~ 1.000
-        randomAdd = 0.5 + Math.random() * 0.5;
-      }
+  const network = document.getElementById('network').value;
+  const isHigh = HIGH_PRECISION_NETWORKS.includes(network);
+  const decimals = isHigh ? 3 : 1;
 
-      randomAdd = parseFloat(randomAdd.toFixed(3));
+  let randomAdd;
+  if (value <= 5) {
+    // 0.3 ~ 0.7
+    randomAdd = 0.3 + Math.random() * 0.4;
+  } else {
+    // 0.5 ~ 1.0
+    randomAdd = 0.5 + Math.random() * 0.5;
+  }
 
-      const lower = parseFloat(value.toFixed(3));
-      const upper = parseFloat((value + randomAdd).toFixed(3));
+  // Làm tròn theo số chữ số thập phân của mạng
+  randomAdd = parseFloat(randomAdd.toFixed(decimals));
 
-      return lower.toFixed(3) + ' - ' + upper.toFixed(3);
-    }
+  const lower = parseFloat(value.toFixed(decimals));
+  const upper = parseFloat((value + randomAdd).toFixed(decimals));
 
+  return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
+}
     function getValues() {
       const vals = [];
       for (let i = 1; i <= 10; i++) {
