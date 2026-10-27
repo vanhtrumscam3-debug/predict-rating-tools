@@ -690,23 +690,48 @@
     }
 
     function calculate() {
-      const v = getValues();
-      const filled = v.slice(0, 6).filter(x => x !== null);
-      const avg6 = filled.length ? filled.reduce((a, b) => a + b, 0) / filled.length : 0;
-      const seventh = v[6];
+  const v = getValues();
+  const filled = v.slice(0, 6).filter(x => x !== null);
+  const avg6 = filled.length ? filled.reduce((a, b) => a + b, 0) / filled.length : 0;
+  const seventh = v[6];
 
-      let nationwide = '–', seoul = '–', peak = '–';
-      if (seventh !== null && seventh !== 0) {
-        nationwide = formatByNetwork((avg6 / seventh) * (v[7] || 0), 'main');
-        seoul      = formatByNetwork((avg6 / seventh) * (v[8] || 0), 'main');
-        peak       = formatByNetwork((avg6 / seventh) * (v[9] || 0), 'peak');
+  let nationwide = '–', seoul = '–', peak = '–';
+
+  if (seventh !== null && seventh !== 0) {
+    const rawNW = (avg6 / seventh) * (v[7] || 0);
+    const rawSeoul = (avg6 / seventh) * (v[8] || 0);
+    const rawPeak = (avg6 / seventh) * (v[9] || 0);
+
+    // Hàm tạo khoảng
+    function makeRange(value) {
+      if (value == null || isNaN(value)) return '–';
+
+      let randomAdd;
+      if (value <= 5) {
+        // 0.300 ~ 0.700
+        randomAdd = 0.3 + Math.random() * 0.4;
+      } else {
+        // 0.500 ~ 1.000
+        randomAdd = 0.5 + Math.random() * 0.5;
       }
 
-      document.getElementById('nationwide').textContent = nationwide === '–' ? '–' : nationwide + '%';
-      document.getElementById('seoul').textContent      = seoul === '–' ? '–' : seoul + '%';
-      document.getElementById('peak').textContent       = peak === '–' ? '–' : peak + '%';
+      randomAdd = parseFloat(randomAdd.toFixed(3));
+
+      const lower = parseFloat(value.toFixed(3));
+      const upper = parseFloat((value + randomAdd).toFixed(3));
+
+      return lower.toFixed(3) + ' - ' + upper.toFixed(3);
     }
 
+    nationwide = makeRange(rawNW);
+    seoul = makeRange(rawSeoul);
+    peak = formatByNetwork(rawPeak, 'peak'); // Peak giữ nguyên 1 số
+  }
+
+  document.getElementById('nationwide').textContent = nationwide === '–' ? '–' : nationwide + '%';
+  document.getElementById('seoul').textContent = seoul === '–' ? '–' : seoul + '%';
+  document.getElementById('peak').textContent = peak === '–' ? '–' : peak + '%';
+}
     function loadEpisode(index) {
       const row = ledger[index];
       if (!row) return;
