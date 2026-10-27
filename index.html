@@ -37,7 +37,7 @@
       z-index: -1;
     }
 
-    .container { max-width: 1600px; margin: 0 auto; }
+    .container { max-width: 1650px; margin: 0 auto; }
 
     header { text-align: center; margin-bottom: 32px; }
 
@@ -317,6 +317,18 @@
     .btn-secondary { background: #1c1917; color: white; }
     .btn-account { background: #3b82f6; color: white; }
 
+    .btn-delete {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 9px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-delete:hover { background: #fecaca; }
+
     .filter-bar {
       display: flex;
       gap: 14px;
@@ -332,7 +344,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1050px;
+      min-width: 1100px;
     }
 
     th {
@@ -525,6 +537,7 @@
                 <th>Nielsen (Seoul)</th>
                 <th>Diff (NW)</th>
                 <th>Diff (Seoul)</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="ledgerBody"></tbody>
@@ -554,7 +567,6 @@
     let fixedAddNW = null;
     let fixedAddSeoul = null;
 
-    // Create episode options
     const episodeSelect = document.getElementById('episode');
     for (let i = 1; i <= 16; i++) {
       const opt = document.createElement('option');
@@ -563,7 +575,6 @@
       episodeSelect.appendChild(opt);
     }
 
-    // Create 10 input rows
     const rtContainer = document.getElementById('rtInputs');
     for (let i = 1; i <= 10; i++) {
       const labelDiv = document.createElement('div');
@@ -610,7 +621,7 @@
     updateDramaFilter();
     renderLedger();
 
-    // ===== Image =====
+    // Image handling
     const dropZone = document.getElementById('imagePreview');
     dropZone.addEventListener('click', () => document.getElementById('dramaImage').click());
 
@@ -675,7 +686,6 @@
     }
 
     function onNetworkChange() {
-      // Reset fixed range when network changes (decimals change)
       fixedAddNW = null;
       fixedAddSeoul = null;
       calculate();
@@ -688,71 +698,64 @@
     }
 
     function makeRange(value, type) {
-  if (value == null || isNaN(value)) return '–';
+      if (value == null || isNaN(value)) return '–';
 
-  const decimals = getDecimals();
+      const decimals = getDecimals();
 
-  if (type === 'NW') {
-    if (fixedAddNW === null) {
-      // Random phần cộng
-      const add = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
-      // Random phần trừ
-      const sub = value <= 5 ? (Math.random() * 0.3) : (Math.random() * 0.5);
+      if (type === 'NW') {
+        if (fixedAddNW === null) {
+          const add = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
+          const sub = value <= 5 ? (Math.random() * 0.3) : (Math.random() * 0.5);
+          fixedAddNW = {
+            add: parseFloat(add.toFixed(decimals)),
+            sub: parseFloat(sub.toFixed(decimals))
+          };
+        }
+        const lower = parseFloat((value - fixedAddNW.sub).toFixed(decimals));
+        const upper = parseFloat((value + fixedAddNW.add).toFixed(decimals));
+        return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
+      }
 
-      fixedAddNW = {
-        add: parseFloat(add.toFixed(decimals)),
-        sub: parseFloat(sub.toFixed(decimals))
-      };
+      if (type === 'Seoul') {
+        if (fixedAddSeoul === null) {
+          const add = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
+          const sub = value <= 5 ? (Math.random() * 0.3) : (Math.random() * 0.5);
+          fixedAddSeoul = {
+            add: parseFloat(add.toFixed(decimals)),
+            sub: parseFloat(sub.toFixed(decimals))
+          };
+        }
+        const lower = parseFloat((value - fixedAddSeoul.sub).toFixed(decimals));
+        const upper = parseFloat((value + fixedAddSeoul.add).toFixed(decimals));
+        return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
+      }
+
+      return '–';
     }
-
-    const lower = parseFloat((value - fixedAddNW.sub).toFixed(decimals));
-    const upper = parseFloat((value + fixedAddNW.add).toFixed(decimals));
-    return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
-  }
-
-  if (type === 'Seoul') {
-    if (fixedAddSeoul === null) {
-      const add = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
-      const sub = value <= 5 ? (Math.random() * 0.3) : (Math.random() * 0.5);
-
-      fixedAddSeoul = {
-        add: parseFloat(add.toFixed(decimals)),
-        sub: parseFloat(sub.toFixed(decimals))
-      };
-    }
-
-    const lower = parseFloat((value - fixedAddSeoul.sub).toFixed(decimals));
-    const upper = parseFloat((value + fixedAddSeoul.add).toFixed(decimals));
-    return lower.toFixed(decimals) + ' - ' + upper.toFixed(decimals);
-  }
-
-  return '–';
-}
 
     function getRandomInRange(value, type) {
-  if (value == null || isNaN(value)) return null;
+      if (value == null || isNaN(value)) return null;
 
-  const decimals = getDecimals();
-  let add = 0, sub = 0;
+      const decimals = getDecimals();
+      let add = 0, sub = 0;
 
-  if (type === 'NW' && fixedAddNW) {
-    add = fixedAddNW.add;
-    sub = fixedAddNW.sub;
-  } else if (type === 'Seoul' && fixedAddSeoul) {
-    add = fixedAddSeoul.add;
-    sub = fixedAddSeoul.sub;
-  } else {
-    // fallback nếu chưa có
-    add = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
-    sub = value <= 5 ? (Math.random() * 0.3) : (Math.random() * 0.5);
-  }
+      if (type === 'NW' && fixedAddNW) {
+        add = fixedAddNW.add;
+        sub = fixedAddNW.sub;
+      } else if (type === 'Seoul' && fixedAddSeoul) {
+        add = fixedAddSeoul.add;
+        sub = fixedAddSeoul.sub;
+      } else {
+        add = value <= 5 ? (0.3 + Math.random() * 0.4) : (0.5 + Math.random() * 0.5);
+        sub = value <= 5 ? (Math.random() * 0.3) : (Math.random() * 0.5);
+      }
 
-  const lower = value - sub;
-  const upper = value + add;
-  const randomValue = lower + Math.random() * (upper - lower);
+      const lower = value - sub;
+      const upper = value + add;
+      const randomValue = lower + Math.random() * (upper - lower);
 
-  return parseFloat(randomValue.toFixed(decimals));
-}
+      return parseFloat(randomValue.toFixed(decimals));
+    }
 
     function formatEstimate(value, network) {
       if (value == null || isNaN(value)) return '–';
@@ -872,11 +875,7 @@
       }
 
       const newRow = {
-        drama: drama,
-        network: network,
-        ep: ep,
-        day: day,
-        avg: avg,
+        drama, network, ep, day, avg,
         estimateNW: estNW,
         estimateSeoul: estSeoul,
         nielsenNW: null,
@@ -907,13 +906,24 @@
         ledger.push(newRow);
       }
 
-      ledger.sort(function(a, b) {
-        return a.drama !== b.drama ? a.drama.localeCompare(b.drama) : a.ep - b.ep;
-      });
+      ledger.sort((a, b) => a.drama !== b.drama ? a.drama.localeCompare(b.drama) : a.ep - b.ep);
       localStorage.setItem('ratingLedger', JSON.stringify(ledger));
       updateDramaFilter();
       renderLedger();
       showToast('Saved ' + drama + ' - Ep ' + ep);
+    }
+
+    function deleteEpisode(index) {
+      const row = ledger[index];
+      if (!row) return;
+
+      if (confirm('Delete ' + row.drama + ' - Ep ' + row.ep + '?')) {
+        ledger.splice(index, 1);
+        localStorage.setItem('ratingLedger', JSON.stringify(ledger));
+        updateDramaFilter();
+        renderLedger();
+        showToast('Deleted ' + row.drama + ' - Ep ' + row.ep);
+      }
     }
 
     function nextEpisode() {
@@ -998,13 +1008,13 @@
       const currentValue = filter.value;
       const dramas = [...new Set(ledger.map(item => item.drama))].sort();
       filter.innerHTML = '<option value="all">All Dramas</option>';
-      dramas.forEach(function(d) {
+      dramas.forEach(d => {
         const opt = document.createElement('option');
         opt.value = d;
         opt.textContent = d;
         filter.appendChild(opt);
       });
-      if ([...filter.options].some(function(o) { return o.value === currentValue; })) {
+      if ([...filter.options].some(o => o.value === currentValue)) {
         filter.value = currentValue;
       }
     }
@@ -1014,28 +1024,26 @@
       const filterValue = document.getElementById('dramaFilter').value;
       tbody.innerHTML = '';
 
-      let filtered = filterValue === 'all' ? ledger : ledger.filter(function(item) { return item.drama === filterValue; });
+      let filtered = filterValue === 'all' ? ledger : ledger.filter(item => item.drama === filterValue);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:28px">No data yet. Please save an episode first.</td></tr>';
         return;
       }
 
-      filtered.forEach(function(row) {
-        const realIndex = ledger.findIndex(function(item) { return item.drama === row.drama && item.ep === row.ep; });
+      filtered.forEach(row => {
+        const realIndex = ledger.findIndex(item => item.drama === row.drama && item.ep === row.ep);
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
         tr.dataset.index = realIndex;
 
-        let diffNWClass = '';
-        let diffNWText = '–';
+        let diffNWClass = '', diffNWText = '–';
         if (row.diffNW != null) {
           diffNWClass = row.diffNW > 0 ? 'diff-pos' : (row.diffNW < 0 ? 'diff-neg' : '');
           diffNWText = (row.diffNW > 0 ? '+' : '') + parseFloat(Number(row.diffNW).toFixed(4));
         }
 
-        let diffSeoulClass = '';
-        let diffSeoulText = '–';
+        let diffSeoulClass = '', diffSeoulText = '–';
         if (row.diffSeoul != null) {
           diffSeoulClass = row.diffSeoul > 0 ? 'diff-pos' : (row.diffSeoul < 0 ? 'diff-neg' : '');
           diffSeoulText = (row.diffSeoul > 0 ? '+' : '') + parseFloat(Number(row.diffSeoul).toFixed(4));
@@ -1047,7 +1055,6 @@
 
         const estNW = formatEstimate(row.estimateNW, row.network);
         const estSeoul = formatEstimate(row.estimateSeoul, row.network);
-
         const nielsenNW = row.nielsenNW != null ? row.nielsenNW : (row.nielsen != null ? row.nielsen : '');
         const nielsenSeoul = row.nielsenSeoul != null ? row.nielsenSeoul : '';
 
@@ -1062,10 +1069,11 @@
           '<td><input type="number" class="nielsen-input" value="' + nielsenNW + '" step="any" min="0" oninput="updateNielsen(' + realIndex + ', this.value, \'NW\')" onclick="event.stopPropagation()" placeholder="–"></td>' +
           '<td><input type="number" class="nielsen-input" value="' + nielsenSeoul + '" step="any" min="0" oninput="updateNielsen(' + realIndex + ', this.value, \'Seoul\')" onclick="event.stopPropagation()" placeholder="–"></td>' +
           '<td class="' + diffNWClass + '">' + diffNWText + '</td>' +
-          '<td class="' + diffSeoulClass + '">' + diffSeoulText + '</td>';
+          '<td class="' + diffSeoulClass + '">' + diffSeoulText + '</td>' +
+          '<td><button class="btn-delete" onclick="event.stopPropagation(); deleteEpisode(' + realIndex + ')">✕</button></td>';
 
         tr.addEventListener('click', function(e) {
-          if (e.target.classList.contains('nielsen-input')) return;
+          if (e.target.classList.contains('nielsen-input') || e.target.classList.contains('btn-delete')) return;
           loadEpisode(realIndex);
         });
 
@@ -1119,7 +1127,7 @@
       const t = document.getElementById('toast');
       t.textContent = msg;
       t.classList.add('show');
-      setTimeout(function() { t.classList.remove('show'); }, 2200);
+      setTimeout(() => t.classList.remove('show'), 2200);
     }
 
     calculate();
