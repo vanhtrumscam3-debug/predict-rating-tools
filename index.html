@@ -835,7 +835,6 @@
         document.getElementById('val' + (i + 1)).value = (row.values && row.values[i] != null) ? row.values[i] : '';
       }
 
-
       calculate();
       document.querySelectorAll('tr.clickable-row').forEach(tr => tr.classList.remove('active'));
       const active = document.querySelector('tr[data-index="' + index + '"]');
@@ -1064,8 +1063,8 @@
           '<td>' + parseFloat((row.avg || 0).toFixed(4)) + '</td>' +
           '<td>' + estNW + '</td>' +
           '<td>' + estSeoul + '</td>' +
-          '<td><input type="number" class="nielsen-input" value="' + nielsenNW + '" step="any" min="0" oninput="updateNielsen(' + realIndex + ', this.value, \'NW\')" onclick="event.stopPropagation()" placeholder="–"></td>' +
-          '<td><input type="number" class="nielsen-input" value="' + nielsenSeoul + '" step="any" min="0" oninput="updateNielsen(' + realIndex + ', this.value, \'Seoul\')" onclick="event.stopPropagation()" placeholder="–"></td>' +
+          '<td><input type="number" class="nielsen-input" value="' + nielsenNW + '" step="any" min="0" onchange="updateNielsen(' + realIndex + ', this.value, \'NW\')" onclick="event.stopPropagation()" placeholder="–"></td>' +
+          '<td><input type="number" class="nielsen-input" value="' + nielsenSeoul + '" step="any" min="0" onchange="updateNielsen(' + realIndex + ', this.value, \'Seoul\')" onclick="event.stopPropagation()" placeholder="–"></td>' +
           '<td class="' + diffNWClass + '">' + diffNWText + '</td>' +
           '<td class="' + diffSeoulClass + '">' + diffSeoulText + '</td>' +
           '<td><button class="btn-delete" onclick="event.stopPropagation(); deleteEpisode(' + realIndex + ')">✕</button></td>';
