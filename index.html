@@ -855,8 +855,8 @@
       const day = document.getElementById('day').value;
       const v = getValues();
       const labels = getLabels();
-      const filledAll = v.filter(x => x !== null);
-      const avg = filledAll.length ? filledAll.reduce((a, b) => a + b, 0) / filledAll.length : 0;
+      const first6 = v.slice(0, 6).filter(x => x !== null);
+      const avg = first6.length ? first6.reduce((a, b) => a + b, 0) / first6.length : 0;
 
       let estNW = null;
       let estSeoul = null;
